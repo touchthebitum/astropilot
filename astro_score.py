@@ -33,7 +33,7 @@ TARGET_OBJECTS = {
 }
 
 OBJECT_SIZES = {
-    "M31": 190,
+    "M31": 140,
     "M42": 85,
     "M51": 11,
     "M81": 27,
@@ -70,7 +70,7 @@ EQUIPMENT_PROFILES = {
 
 
 
-CURRENT_EQUIPMENT = "newton_150_750"
+CURRENT_EQUIPMENT = "widefield_135mm"
 
 
 TARGETS = {
@@ -579,6 +579,10 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     "target_altitude": round(target_altitude, 1),
     "sqm": sqm,
     "score_final": score,
+    "frame_bonus": frame_bonus,
+    "target_bonus": target_bonus,
+    "temperature_bonus": tb,
+    "penalty": round(penalty, 1),
 }
     
     if mp < 5:
@@ -591,7 +595,6 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
         moon_impact = "fort"
     else:
         moon_impact = "très fort"
-        
     
     return {
     "score": score,
@@ -875,7 +878,7 @@ def forecast_astro(lat: float, lon: float, name: str = "Lieu choisi", bortle: in
             key=lambda x: x["score"],
             reverse=True
         )
-
+        
         if len(all_results) == 0:
             continue
 
@@ -903,8 +906,11 @@ def forecast_astro(lat: float, lon: float, name: str = "Lieu choisi", bortle: in
                     "moon_sep": round(float(r["window"]["moon_sep"]), 1),
                     "sqm": round(float(r["window"]["sqm"]), 2),
                     "moon_score": round(float(r["window"]["details"][0]["moon"]), 1),
+                    "frame_bonus": round(float(r["window"]["details"][0]["frame_bonus"]), 1),
+                
                 }
                 for r in all_results[:5]
+                    
             ],
             "best_window": {
                 "start": best["start"].strftime("%H:%M"),
@@ -1073,12 +1079,7 @@ if __name__ == "__main__":
                         f"{night['best_window']['start']} → {night['best_window']['end']}"
                     )
 
-                    print("Top objets :")
-    for obj in night["top_objects"]:
-        print(
-            f"{obj['name']} : {obj['score']}/100 | "
-            f"alt {obj['altitude']:.0f}°"
-        )
+                    
 
     print()
    
