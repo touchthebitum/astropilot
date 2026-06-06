@@ -1,12 +1,16 @@
 CATALOG = {
     "M31": {
-        "name": "Galaxie d’Andromède",
-        "type": "galaxy",
-        "size_arcmin": 140,
-        "magnitude": 3.4,
-        "difficulty": 1,
+         "ra": 10.6847,
+         "dec": 41.2692,
+         "name": "Galaxie d’Andromède",
+         "type": "galaxy",
+         "size_arcmin": 140,
+         "magnitude": 3.4,
+         "difficulty": 1,
     },
     "M42": {
+	"ra": 83.8221,
+        "dec": -5.3911,
         "name": "Nébuleuse d’Orion",
         "type": "nebula",
         "size_arcmin": 85,
@@ -14,6 +18,9 @@ CATALOG = {
         "difficulty": 1,
     },
     "M51": {
+	"ra": 202.4842,
+        "dec": 47.2306,
+        "size_arcmin": 11,
         "name": "Galaxie du Tourbillon",
         "type": "galaxy",
         "size_arcmin": 11,
@@ -21,6 +28,9 @@ CATALOG = {
         "difficulty": 3,
     },
     "M81": {
+	"ra": 148.8882,
+        "dec": 69.0653,
+        "size_arcmin": 27,
         "name": "Galaxie de Bode",
         "type": "galaxy",
         "size_arcmin": 27,
@@ -28,6 +38,9 @@ CATALOG = {
         "difficulty": 2,
     },
     "M101": {
+	"ra": 210.8023,
+        "dec": 54.3489,
+        "size_arcmin": 28,
         "name": "Galaxie du Moulinet",
         "type": "galaxy",
         "size_arcmin": 28,
@@ -35,6 +48,9 @@ CATALOG = {
         "difficulty": 3,
     },
     "Rosette": {
+	"ra": 97.5,
+        "dec": 4.95,
+        "size_arcmin": 80,
         "name": "Nébuleuse de la Rosette",
         "type": "nebula",
         "size_arcmin": 80,
@@ -42,6 +58,9 @@ CATALOG = {
         "difficulty": 2,
     },
     "NorthAmerica": {
+	"ra": 314.75,
+        "dec": 44.33,
+        "size_arcmin": 120,
         "name": "Nébuleuse North America",
         "type": "nebula",
         "size_arcmin": 120,
