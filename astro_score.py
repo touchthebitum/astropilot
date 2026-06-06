@@ -1104,7 +1104,13 @@ if __name__ == "__main__":
         
     for i, night in enumerate(top_nights, 1):
                     print(f"#{i} — {night['date']}")
-                    print(f"Objet recommandé : {night['object']}")
+                    obj_key = night["object"]
+                    obj = CATALOG.get(obj_key, {"name": obj_key})
+
+                    print(
+                        f"Objet recommandé : "
+                        f"{obj['name']} ({obj_key})"
+                    )
                     print(f"Score objet      : {night['best_object_score']}/100")
                     print(f"Score nuit       : {night['score']}/100")
                     print(f"SQM              : {night['top_windows'][0]['sqm']:.2f}")
