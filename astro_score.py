@@ -12,6 +12,8 @@ from astropy.time import Time
 import astropy.units as u
 from astropy.coordinates.baseframe import NonRotationTransformationWarning
 from astropilot.catalog import CATALOG
+from astropilot.equipment_profiles import CURRENT_EQUIPMENT, get_fov
+
 
 warnings.filterwarnings(
     "ignore",
@@ -123,37 +125,41 @@ TARGETS = {
 }
 
 def framing_bonus(target_object):
-    equipment = EQUIPMENT_PROFILES[CURRENT_EQUIPMENT]
+    obj = CATALOG[target_object]
 
-    sensor_width = equipment["sensor_width_mm"]
-    focal = equipment["focal_length_mm"]
+    fov = get_fov()
+    frame_width = fov["width_deg"]
+    frame_height = fov["height_deg"]
 
-    fov_deg = 57.3 * sensor_width / focal
+    object_width = obj.get("width_arcmin", obj.get("size_arcmin", 30)) / 60
+    object_height = obj.get("height_arcmin", obj.get("size_arcmin", 30)) / 60
 
-    object_deg = CATALOG[target_object]["size_arcmin"] / 60
-    
-    ratio = object_deg / fov_deg
+    ratio_w = object_width / frame_width
+    ratio_h = object_height / frame_height
 
+    print(
+        target_object,
+        "size=", round(object_width, 2),
+        "ratio=", round(ratio, 2)
+    )
+
+    ratio = max(ratio_w, ratio_h)
 
     if 0.25 <= ratio <= 0.8:
         return 10
-
     elif 0.15 <= ratio < 0.25:
         return 5
-
-    elif 0.1 < ratio <= 0.15:
+    elif 0.1 <= ratio < 0.15:
         return 0
-    
     elif 0.8 < ratio <= 1.0:
         return 0
-    
     elif 1.0 < ratio <= 1.2:
         return -10
-    
     elif ratio > 1.2:
         return -20
     else:
-         return -5
+        return -5
+
 
 def safe_moonrise(observer, date, tz):
     try:
@@ -555,7 +561,7 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     else:
         sqm_bonus = -5
         
-    frame_bonus = framing_bonus(target_object)if target_object else 0
+    frame_bonus = 0
     
     score = round(
     max(
@@ -700,7 +706,6 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
             )
 
             target_obj = TARGET_OBJECTS[target_object]
-            equipment = EQUIPMENT_PROFILES[CURRENT_EQUIPMENT]
 
             target_alt = target_altitude(
                 target_obj["ra"],
@@ -740,6 +745,38 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
             obj_type = obj_meta.get("type", "unknown")
 
             object_bonus = 0
+            
+            from astropilot.equipment_profiles import (
+                CURRENT_EQUIPMENT,
+                get_fov
+            )
+        
+            fov = get_fov()
+
+            object_size = obj_meta.get("size_arcmin", 30) / 60
+            frame_width = fov["width_deg"]
+
+            ratio = object_size / frame_width
+
+            
+
+            
+            if 0.2 <= ratio <= 1.0:
+                object_bonus += 8
+
+            elif 0.1 <= ratio < 0.2:
+                object_bonus += 4
+
+            elif 1.0 < ratio <= 2.0:
+                object_bonus += 2
+
+            elif ratio > 2.0:
+                object_bonus -= 8
+
+            elif ratio < 0.05:
+                object_bonus -= 6
+                
+            
 
             # Bonus difficulté : objets faciles favorisés
             if difficulty == 1:
@@ -765,22 +802,7 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
             elif obj_type == "cluster" and moon_illumination > 50:
                 object_bonus += 2
 
-
-            #print(
-                #target_object,
-                #"base=", result["score"],
-                #"bonus=", object_bonus,
-                #"final=", result["score"] + object_bonus
-#)
-
-            #if target_object in ["IC1396", "NorthAmerica", "M13", "M101"]:
-                #print(
-                    #target_object,
-                    #"base=", result["score"],
-                    #"bonus=", object_bonus,
-                    #"final=", result["score"] + object_bonus
-    #)
-
+            
             result["score"] = max(0, min(100, result["score"] + object_bonus))
 
             scores.append(result["score"])
@@ -923,38 +945,7 @@ def forecast_astro(lat: float, lon: float, name: str = "Lieu choisi", bortle: in
                 "score": best["score"],
                 "window": best
             })
-
-            print("\nClassement objets :")
-
-            for r in sorted(all_results,
-                key=lambda x: x["score"],
-                reverse=True):
-
-                w = r["window"]
-
-                print(
-                    f"{r['object']:12s}"
-                    f" score={r['score']:3d}"
-                    f" alt={w['target_altitude']:4.1f}"
-                    f" moon={w['moon_sep']:5.1f}"
-                    f" sqm={w['sqm']:4.2f}"
-            )
-
-            print("\nTop 10 objets :")
-
-            for r in all_results[:10]:
-
-                obj = CATALOG[r["object"]]
-                w = r["window"]
-
-                print(
-                    f"{r['object']:10s}"
-                    f"{obj['name']:30s}"
-                    f" score={r['score']:3d}"
-                    f" alt={w['target_altitude']:4.1f}"
-                    f" moon={w['moon_sep']:5.1f}"
-                    f" sqm={w['sqm']:4.2f}"
-        )
+            
         if len(all_results) == 0:
             continue
 
