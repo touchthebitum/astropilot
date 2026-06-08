@@ -1,0 +1,24 @@
+{
+  "user": {
+    "name": "Franck",
+    "experience_level": "advanced"
+  },
+
+  "equipment": {
+    "primary": "redcat51_2600",
+    "secondary": "rc8_294"
+  },
+
+  "preferences": {
+    "favorite_targets": [
+      "galaxies",
+      "nebulae"
+    ],
+
+    "min_altitude_deg": 30,
+    "min_sqm": 20.0,
+    "bortle": 3
+  },
+
+  "default_location": "buttes"
+}

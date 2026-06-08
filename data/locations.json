@@ -1,0 +1,19 @@
+[
+  {
+    "id": "buttes",
+    "name": "Buttes",
+    "country": "Switzerland",
+    "latitude": 46.73,
+    "longitude": 6.61,
+    "elevation_m": 770
+  },
+
+  {
+    "id": "mont_sujet",
+    "name": "Mont Sujet",
+    "country": "Switzerland",
+    "latitude": 47.02,
+    "longitude": 6.77,
+    "elevation_m": 1380
+  }
+]

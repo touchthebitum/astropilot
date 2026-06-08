@@ -13,6 +13,7 @@ import astropy.units as u
 from astropy.coordinates.baseframe import NonRotationTransformationWarning
 from astropilot.catalog import CATALOG
 from astropilot.equipment_profiles import CURRENT_EQUIPMENT, get_fov
+from astropilot.user_profile import get_default_location, load_user_profile
 from astropilot.equipment_profiles import (
     get_fov,
     set_current_equipment,
@@ -1126,15 +1127,16 @@ if __name__ == "__main__":
                 f"\n--- {profile} --- "
                 f"FOV={fov['width_deg']:.2f}° x {fov['height_deg']:.2f}°"
             )
-            nights = forecast_astro(
-                46.2333,
-                7.3667,
-                "Sion",
-                3,
-                "deep_sky",
-                equipment=profile
-            )
+            location = get_default_location()
 
+            nights = forecast_astro(
+            location["latitude"],
+            location["longitude"],
+            location["name"],
+            load_user_profile()["preferences"]["bortle"],
+            "deep_sky",
+            equipment=profile
+            )
             print ("nuits trouvées :", len(nights))
 
             top = sorted(
@@ -1294,8 +1296,20 @@ if __name__ == "__main__":
                     
 
     print()
-   
+
  
-        
+from astropilot.user_profile import get_default_location
+
+print()
+print("=== PROFIL UTILISATEUR ===")
+
+profile = load_user_profile()
+location = get_default_location()
+
+print("Lieu :", location["name"])
+print("Latitude :", location["latitude"])
+print("Longitude :", location["longitude"])
+print("Altitude :", location["elevation_m"], "m")  
+print("Bortle :", profile["preferences"]["bortle"])
         
 
