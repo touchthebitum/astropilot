@@ -1,3 +1,4 @@
+
 import requests
 import warnings
 from datetime import datetime, timedelta
@@ -13,6 +14,7 @@ import astropy.units as u
 from astropy.coordinates.baseframe import NonRotationTransformationWarning
 from astropilot.catalog import CATALOG
 from astropilot.equipment_profiles import CURRENT_EQUIPMENT, get_fov
+from astropilot.equipment_profiles import equipment_match_score
 from astropilot.user_profile import get_default_location, load_user_profile, favorite_targets
 from astropilot.equipment_profiles import (
     get_fov,
@@ -502,10 +504,7 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
 
         if obj and obj["type"] in favorite_targets():
             target_bonus += 10
-            if obj and obj["type"] in favorite_targets():
-                target_bonus += 10
                 
-
     if target_altitude > 80:
         target_bonus += 15
     elif target_altitude > 70:
@@ -577,14 +576,21 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     else:
         sqm_bonus = -5
         
-    frame_bonus = 0
+    obj_meta = CATALOG.get(target_object, {})
+
+    equipment_score = equipment_match_score(
+    obj_meta.get("size_arcmin", 20),
+    obj_meta.get("type", "unknown")
+)
+
+    frame_bonus = round((equipment_score - 50) / 5)
     
     score = round(
     max(
         0,
         min(
             100,
-            75 - penalty + tb + target_bonus + sqm_bonus + frame_bonus
+            55 - penalty + tb + target_bonus + sqm_bonus + frame_bonus
         )
     )
 )
@@ -685,14 +691,11 @@ def night_hours_rough(rows: list[dict], date: datetime, lat: float, lon: float, 
     start = s["dusk"]
     end = s_next["dawn"]
 
-    return [r for r in rows if start <= r["time"] <= end]
+    night_rows = [r for r in rows if start <= r["time"] <= end]
 
-    for r in night_rows:
-        print(r["time"])
+
 
     return night_rows
-    return [r for r in rows if start <= r["time"] <= end]
-
 
 def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_set, observer, bortle=4, target="deep_sky", target_object="M31", window_size: int = 2, limit: int = 3):
 
@@ -923,10 +926,17 @@ def forecast_astro(
     city,
     bortle,
     target="deep_sky",
-    equipment="redcat51_2600"
+    equipment="None"
 ):
-    set_current_equipment(equipment)
-    weather = fetch_weather(lat, lon)
+
+    if equipment is None:
+        equipment = load_user_profile()["equipment"]["primary"]
+
+    try:
+        weather = fetch_weather(lat, lon)
+    except Exception as e:
+        print("ERREUR fetch_weather =", repr(e))
+        return []
 
     if weather is None:
         print("Prévisions météo indisponibles.")
@@ -994,9 +1004,10 @@ def forecast_astro(
                 target,
                 obj_name
             )
-
+            
             if not top_windows:
-                continue
+                    continue
+                
 
             best = top_windows[0]
 
@@ -1006,8 +1017,8 @@ def forecast_astro(
                 "window": best
             })
 
-        if len(all_results) == 0:
-            continue
+        if not all_results:
+                continue
 
         all_results.sort(
             key=lambda x: x["score"],
@@ -1077,8 +1088,7 @@ def forecast_astro(
                 ),
             }
         })
-
-    return sorted(results, key=lambda x: x["score"], reverse=True)
+    return results
 
 def get_location_by_ip():
     try:
@@ -1102,11 +1112,11 @@ def get_location_by_ip():
         }
     
 if __name__ == "__main__":
-
+    #print   ("TEST FRANCK 1234")
     parser = argparse.ArgumentParser()
     parser.add_argument(
             "--equipment",
-            default="redcat51_2600",
+            default=None,
             help="Profil matériel à utiliser"
     )
 
@@ -1143,15 +1153,23 @@ if __name__ == "__main__":
             )
             location = get_default_location()
 
+            user_profile = load_user_profile()
+
+            print("USER PROFILE PRIMARY =", user_profile["equipment"]["primary"])
+
             nights = forecast_astro(
-            location["latitude"],
-            location["longitude"],
-            location["name"],
-            load_user_profile()["preferences"]["bortle"],
-            "deep_sky",
-            equipment=profile
+                location["latitude"],
+                location["longitude"],
+                location["name"],
+                load_user_profile()["preferences"]["bortle"],
+                "deep_sky",
+                equipment=selected_equipment
             )
-            print ("nuits trouvées :", len(nights))
+
+            if nights is None:
+                nights = []
+            print("NIGHTS =", type(nights), nights is None)
+            print("nuits trouvées :", len(nights))
 
             top = sorted(
                     nights,
@@ -1163,7 +1181,7 @@ if __name__ == "__main__":
                 print(
                 f'{night["date"]} '
                 f'{night["object"]:<18} '
-            f'objet={night["best_object_score"]:>3} '
+                f'objet={night["best_object_score"]:>3} '
                 f'nuit={night["score"]:>3}'
             )
 
@@ -1186,22 +1204,26 @@ if __name__ == "__main__":
     
         bortle = 3
         target = "deep_sky"
-        nights = forecast_astro(
-            lat,
-            lon,
-            city,
-            bortle,
-            TARGET,
-            equipment=args.equipment
-        )
+    user_profile = load_user_profile()
+    selected_equipment = args.equipment or user_profile["equipment"]["primary"]
 
-    top_nights = sorted(
-    nights,
-    key=lambda x: x["score"],
-    reverse=True
-    )[:3]
+    nights = forecast_astro(
+        lat,
+        lon,
+        city,
+        bortle,
+        TARGET,
+        equipment=selected_equipment
+)
 
-    for night in top_nights:
+if nights is None:
+    print("ERREUR: forecast_astro a retourné None")
+    exit()
+
+
+top_nights = sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
+
+for night in top_nights:
    
         print("\n======================")
         print("Date :", night["date"])
@@ -1215,6 +1237,7 @@ if __name__ == "__main__":
         "-",
         night["best_window"]["end"]
     )
+
         print("Top objets :")
         for obj in night["top_objects"][:3]:
             print(
@@ -1277,53 +1300,36 @@ if __name__ == "__main__":
     )
 
             
-    top_nights = sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
-    
+top_nights = sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
 
-        
-    for i, night in enumerate(top_nights, 1):
-                    print(f"#{i} — {night['date']}")
-                    obj_key = night["object"]
-                    obj = CATALOG.get(obj_key, {"name": obj_key})
 
-                    print(
-                        f"Objet recommandé : "
-                        f"{obj['name']} ({obj_key})"
-                    )
-                    print(f"Score objet      : {night['best_object_score']}/100")
-                    print(f"Score nuit       : {night['score']}/100")
-                    print(f"SQM              : {night['top_windows'][0]['sqm']:.2f}")
-                    print(
-                        f"Fenêtre optimale : "
-                        f"{night['best_window']['start']} → {night['best_window']['end']}"
-                    )
-                    print("Top objets :")
-                    for obj in night["top_objects"][:3]:
-                        print(
-                            f"  {obj['name']} | "
-                            f"score={obj['score']} | "
-                            f"alt={obj['altitude']}° | "
-                            f"sep lune={obj['moon_sep']}° | "
-                            f"sqm={obj['sqm']}"
-                        )   
+for i, night in enumerate(top_nights, 1):
+    print(f"#{i} - {night['date']}")
+
+    obj_key = night["object"]
+    obj = CATALOG.get(obj_key, {"name": obj_key})
+
+    print(
+        f"Objet recommandé : "
+        f"{obj['name']} ({obj_key})"
+    )
+    print(f"Score objet      : {night['best_object_score']}/100")
+    print(f"Score nuit       : {night['score']}/100")
+    print(f"SQM              : {night['top_windows'][0]['sqm']:.2f}")
+    print("Top objets :")
+    for obj in night["top_objects"][:3]:
+
+            print(
+                f"  {obj['name']} | "
+                f"score={obj['score']} | "
+                f"alt={obj['altitude']}° | "
+                f"sep lune={obj['moon_sep']}° | "
+                f"sqm={obj['sqm']}"
+            )   
 
                     
 
     print()
 
- 
-from astropilot.user_profile import get_default_location
-
-print()
-print("=== PROFIL UTILISATEUR ===")
-
-profile = load_user_profile()
-location = get_default_location()
-
-print("Lieu :", location["name"])
-print("Latitude :", location["latitude"])
-print("Longitude :", location["longitude"])
-print("Altitude :", location["elevation_m"], "m")  
-print("Bortle :", profile["preferences"]["bortle"])
         
 

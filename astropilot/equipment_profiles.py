@@ -65,6 +65,46 @@ def get_fov(equipment=None):
         ),
         }
 
+def equipment_match_score(object_size_arcmin, object_type="unknown", equipment=None):
+    """
+    Score d'adéquation entre un objet et le champ du matériel.
+    Retourne un score entre 0 et 100.
+    """
+
+    if equipment is None:
+        equipment = get_current_equipment()
+
+    fov = get_fov(equipment)
+    width = fov["width_deg"]
+    height = fov["height_deg"]
+    frame_diag = math.sqrt(width ** 2 + height ** 2)
+
+    object_size_deg = object_size_arcmin / 60
+    ratio = object_size_deg / frame_diag
+
+    if object_type == "planetary_nebula":
+        ideal_min = 0.02
+        ideal_max = 0.20
+    elif object_type == "galaxy":
+        ideal_min = 0.08
+        ideal_max = 0.25
+    elif object_type == "cluster":
+        ideal_min = 0.10
+        ideal_max = 0.60
+    else:
+        ideal_min = 0.15
+        ideal_max = 0.90
+
+    if ideal_min <= ratio <= ideal_max:
+        return 100
+
+    if ratio < ideal_min:
+        score = 100 * (ratio / ideal_min)
+    else:
+        score = 100 * (ideal_max / ratio)
+
+    return max(0, min(100, round(score)))
+
 def set_current_equipment(profile_name):
     global CURRENT_EQUIPMENT
 

@@ -1176,7 +1176,7 @@ if __name__ == "__main__":
             city,
             bortle,
             TARGET,
-            equipment=args.equipment
+           equipment=args.equipment or load_user_profile()["equipment"]["primary"]
         )
 
     top_nights = sorted(

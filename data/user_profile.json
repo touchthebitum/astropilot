@@ -5,10 +5,10 @@
   },
 
   "equipment": {
-    "primary": "redcat51_2600",
+    "primary": "rc8_294",
     "secondary": "rc8_294"
   },
-
+  
   "preferences": {
     "favorite_targets": [
         "galaxy",
