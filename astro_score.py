@@ -1000,7 +1000,7 @@ def forecast_astro(
         ]
 
         best = best_results[0]["window"]
-        best_object = best_results[0]["object"]
+        best_object = best_results[0]["name"]
 
         top3 = all_results[:3]
         top5 = all_results[:5]
@@ -1018,13 +1018,13 @@ def forecast_astro(
             "bortle": bortle,
             "object": best_object,
             "best_objects": [
-                r["object"]
+                r["name"]
                 for r in top3
                 if r["score"] == best_score
             ],
             "top_objects": [
                 {
-                    "name": r["object"],
+                    "name": r["name"],
                     "score": int(r["score"]),
                     "altitude": round(float(r["window"]["target_altitude"]), 1),
                     "moon_sep": round(float(r["window"]["moon_sep"]), 1),
