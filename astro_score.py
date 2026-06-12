@@ -585,15 +585,7 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
 
     equipment_score = equipment_result["equipment_score"]
     frame_bonus = equipment_result["frame_bonus"]
-
-    print(
-    target_object,
-    obj_meta.get("size_arcmin"),
-    equipment_score,
-    frame_bonus
-    )
-
-    
+ 
     score = round(
     max(
         0,
@@ -1047,7 +1039,6 @@ def forecast_astro(
                     "sqm": round(float(r["window"]["sqm"]), 2),
                     "moon_score": round(float(r["window"]["details"][0]["moon"]), 1),
                     "frame_bonus": round(float(r["window"]["details"][0]["frame_bonus"]), 1),
-                    "top_objects": top5,
                 }
                 for r in all_results[:5]
             ],
