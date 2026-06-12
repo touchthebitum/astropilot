@@ -71,6 +71,46 @@ def get_fov(equipment=None):
             equipment["sensor_height_mm"]
         ),
         }
+def compare_object_to_equipment(object_size_arcmin, object_type="unknown", equipment=None):
+    if equipment is None:
+        equipment = get_current_equipment()
+
+    fov = get_fov(equipment)
+    width = fov["width_deg"]
+    height = fov["height_deg"]
+    frame_diag = math.sqrt(width ** 2 + height ** 2)
+
+    object_size_deg = object_size_arcmin / 60
+    ratio = object_size_deg / frame_diag
+
+    if object_type == "planetary_nebula":
+        ideal_min, ideal_max = 0.02, 0.20
+    elif object_type == "galaxy":
+        ideal_min, ideal_max = 0.08, 0.25
+    elif object_type == "cluster":
+        ideal_min, ideal_max = 0.10, 0.60
+    elif object_type == "nebula":
+        ideal_min, ideal_max = 0.20, 0.55
+    else:
+        ideal_min, ideal_max = 0.15, 0.90
+
+    if ideal_min <= ratio <= ideal_max:
+        score = 100
+    elif ratio < ideal_min:
+        score = 100 * (ratio / ideal_min)
+    else:
+        score = 100 * (ideal_max / ratio)
+
+    score = max(0, min(100, round(score)))
+    frame_bonus = round((score - 50) / 10)
+
+    return {
+        "equipment_score": score,
+        "frame_bonus": frame_bonus,
+        "ratio": round(ratio, 3),
+        "object_size_deg": round(object_size_deg, 2),
+        "frame_diag_deg": round(frame_diag, 2),
+    }
 
 def equipment_match_score(object_size_arcmin, object_type="unknown", equipment=None):
     """

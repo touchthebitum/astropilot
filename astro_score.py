@@ -20,7 +20,8 @@ from astropilot.equipment_profiles import (
     get_fov,
     set_current_equipment,
     get_current_equipment,
-    list_equipment
+    list_equipment,
+    compare_object_to_equipment
 )
 import argparse
 
@@ -577,12 +578,13 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
 
     #if target_object in ["M81", "M101", "NorthAmerica", "IC1396"]:
     
-    equipment_score = equipment_match_score(
-        obj_meta.get("size_arcmin", 20),
-        obj_meta.get("type", "unknown")
+    equipment_result = compare_object_to_equipment(
+    obj_meta.get("size_arcmin", 20),
+    obj_meta.get("type", "unknown")
     )
-    
-    frame_bonus = round((equipment_score - 50) / 10)
+
+    equipment_score = equipment_result["equipment_score"]
+    frame_bonus = equipment_result["frame_bonus"]
     
     score = round(
     max(
