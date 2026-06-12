@@ -98,6 +98,9 @@ def equipment_match_score(object_size_arcmin, object_type="unknown", equipment=N
     elif object_type == "cluster":
         ideal_min = 0.10
         ideal_max = 0.60
+    elif object_type == "nebula":
+        ideal_min = 0.20
+        ideal_max = 0.60
     else:
         ideal_min = 0.15
         ideal_max = 0.90

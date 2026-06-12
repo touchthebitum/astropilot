@@ -582,7 +582,7 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
         obj_meta.get("type", "unknown")
     )
     
-    frame_bonus = round((equipment_score - 50) / 20)
+    frame_bonus = round((equipment_score - 50) / 10)
     
     score = round(
     max(
@@ -810,7 +810,7 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
                 ideal_max = 0.60
             else:  # nebula
                 ideal_min = 0.20
-                ideal_max = 1.00
+                ideal_max = 0.60
 
             if ideal_min <= ratio <= ideal_max:
                 object_bonus += 20
