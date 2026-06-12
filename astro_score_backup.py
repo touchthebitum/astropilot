@@ -146,12 +146,6 @@ def framing_bonus(target_object):
     ratio_h = object_height / frame_height
     ratio = max(ratio_w, ratio_h)
 
-    print(
-        target_object,
-        "size=", round(object_width, 2),
-        "ratio=", round(ratio, 2)
-    )
-
     
     if 0.3 <= ratio <= 1.0:
         return 10
@@ -825,14 +819,6 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
                 object_bonus -= 2
             elif obj_type == "cluster" and moon_illumination > 50:
                 object_bonus += 2
-                
-            #print(
-                #f"{target_object:15} "
-                #f"type={obj_type:15} "
-                #f"ratio={ratio:.2f} "
-                #f"bonus={object_bonus}"
-            #)
-
             
             result["score"] = max(0, min(100, result["score"] + object_bonus))
 
@@ -1005,6 +991,11 @@ def forecast_astro(
         night_score = round(
             sum(r["score"] for r in all_results[:3]) / len(all_results[:3])
         )
+
+        ###print("DEBUG all_results =", len(all_results))
+        ##print("DEBUG top3 =", len(top3))
+        #print("DEBUG night_score =", night_score)
+
 
         results.append({
             "date": str(night_date),
@@ -1185,20 +1176,13 @@ if __name__ == "__main__":
     reverse=True
     )[:3]
 
-    ######for night in top_nights:
-   
-        #####print("\n======================")
-        ####print("Date :", night["date"])
-        ###print("Score :", night["score"], "/100")
-        ##print("Verdict :", night["verdict"])
-        #print("Bortle :", night["bortle"])
 
         print(
-        "Meilleur créneau :",
-        night["best_window"]["start"],
-        "-",
-        night["best_window"]["end"]
-    )
+            "Meilleur créneau :",
+            night["best_window"]["start"],
+            "-",
+            night["best_window"]["end"]
+        )
         print("Top objets :")
         for obj in night["top_objects"][:3]:
             print(

@@ -52,6 +52,11 @@ OBJECT_SIZES = {
     "M101": 28,
     "Rosette": 80,
     "NorthAmerica": 120,
+    "Pelican": 60,
+    "IC1396": 170,
+    "Heart": 120,
+    "Soul": 150,
+    "Veil": 180,
 }
 
 EQUIPMENT_PROFILES = {
@@ -570,9 +575,11 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
         
     obj_meta = CATALOG.get(target_object, {})
 
+    #if target_object in ["M81", "M101", "NorthAmerica", "IC1396"]:
+    
     equipment_score = equipment_match_score(
         obj_meta.get("size_arcmin", 20),
-obj_meta.get("type", "unknown")
+        obj_meta.get("type", "unknown")
     )
     
     frame_bonus = round((equipment_score - 50) / 20)
