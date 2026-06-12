@@ -998,6 +998,7 @@ def forecast_astro(
         best_object = best_results[0]["object"]
 
         top3 = all_results[:3]
+        top5 = all_results[:5]
         night_score = round(
             sum(r["score"] for r in top3) / len(top3)
         )
@@ -1025,6 +1026,7 @@ def forecast_astro(
                     "sqm": round(float(r["window"]["sqm"]), 2),
                     "moon_score": round(float(r["window"]["details"][0]["moon"]), 1),
                     "frame_bonus": round(float(r["window"]["details"][0]["frame_bonus"]), 1),
+                    "top_objects": top5,
                 }
                 for r in all_results[:5]
             ],
@@ -1298,15 +1300,24 @@ top_nights = sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
 for i, night in enumerate(top_nights, 1):
     print(f"#{i} - {night['date']}")
 
-    best_objects = night.get("best_objects") or [night["object"]]
+print("Top objets :")
+##for obj in night["top_objects"]:
+    #print(obj)
+for j, obj in enumerate(night["top_objects"], start=1):
+    print(
+        f"  {j}. {obj['name']} "
+        f"({obj['score']:.1f})"
+    )
 
-    if len(best_objects) == 1:
+best_objects = night.get("best_objects") or [night["object"]]
+
+if len(best_objects) == 1:
         obj_key = best_objects[0]
         obj = CATALOG.get(obj_key, {"name": obj_key})
 
         print(f"Objet recommandé : {obj['name']} ({obj_key})")
 
-    else:
+else:
         print("Objets recommandés (ex aequo) :")
 
         for obj_key in best_objects:
@@ -1314,7 +1325,7 @@ for i, night in enumerate(top_nights, 1):
             print(f" - {obj['name']} ({obj_key})")
 
                   
-    print()
+print()
 
         
 
