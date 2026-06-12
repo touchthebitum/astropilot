@@ -149,12 +149,6 @@ def framing_bonus(target_object):
     ratio_h = object_height / frame_height
     ratio = max(ratio_w, ratio_h)
 
-    print(
-        target_object,
-        "size=", round(object_width, 2),
-        "ratio=", round(ratio, 2)
-    )
-
     
     if 0.3 <= ratio <= 1.0:
         return 10
@@ -191,20 +185,20 @@ def fetch_weather(lat: float, lon: float) -> dict | None:
         "timezone": TIMEZONE,
         "forecast_days": 7,
         "hourly": ",".join([
-            "cloud_cover",
-            "cloud_cover_low",
-            "cloud_cover_mid",
-            "cloud_cover_high",
-            "precipitation",
-            "relative_humidity_2m",
-            "visibility",
-            "wind_speed_10m",
-            "temperature_2m",
-        ])
+                "cloud_cover",
+                "cloud_cover_low",
+                "cloud_cover_mid",
+                "cloud_cover_high",
+                "precipitation",
+                "relative_humidity_2m",
+                "visibility",
+                "wind_speed_10m",
+                "temperature_2m",
+            ])
     }
 
     try:
-        response = requests.get(url, params=params, timeout=60)
+        response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
         return response.json()
 
@@ -477,7 +471,7 @@ def estimated_sqm(bortle, moon_illumination, moon_elevation, moon_target_sep):
 
     return round(base - moon_loss, 2)
 
-def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None):
+def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
     penalty = 0
 
     bp = bortle_penalty(bortle)
@@ -486,7 +480,7 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     hour["cloud_cover_low"],
     hour["cloud_cover_mid"],
     hour["cloud_cover_high"]
-)
+    )
     
     mp = moon_penalty(moon_illumination, moon_elevation, moon_target_sep)
 
@@ -494,8 +488,7 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     bortle,
     moon_illumination,
     moon_elevation,
-    moon_target_sep
-)
+    moon_target_sep)
     
     target_bonus = 0
 
@@ -579,11 +572,11 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     obj_meta = CATALOG.get(target_object, {})
 
     equipment_score = equipment_match_score(
-    obj_meta.get("size_arcmin", 20),
-    obj_meta.get("type", "unknown")
-)
-
-    frame_bonus = round((equipment_score - 50) / 10)
+        obj_meta.get("size_arcmin", 20),
+obj_meta.get("type", "unknown")
+    )
+    
+    frame_bonus = round((equipment_score - 50) / 20)
     
     score = round(
     max(
@@ -623,13 +616,13 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
         moon_impact = "fort"
     else:
         moon_impact = "très fort"
-    
+
     return {
-    "score": score,
-    "details": details,
-    "moon_impact": moon_impact,
-    "moon_penalty": round (mp, 1),
-}
+        "score": score,
+        "details": details,
+        "moon_impact": moon_impact,
+        "moon_penalty": round (mp, 1),
+    }
 
 def verdict(score: int) -> str:
     if score >= 90:
@@ -697,10 +690,8 @@ def night_hours_rough(rows: list[dict], date: datetime, lat: float, lon: float, 
 
     return night_rows
 
-def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_set, observer, bortle=4, target="deep_sky", target_object="M31", window_size: int = 2, limit: int = 3):
+def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_set, observer, bortle=4, target="deep_sky", target_object="M31", goal="balanced", window_size: int = 2, limit: int = 3):
 
-    #print ("DEBUG BEST_WINDOWS")
-    
     if len(hours) < window_size:
         return []
     
@@ -762,7 +753,8 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
                 target_alt,
                 bortle,
                 target,
-                target_object
+                target_object,
+                goal=goal
             )
 
             obj_meta = CATALOG.get(target_object, {})
@@ -786,16 +778,21 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
             frame_diag = (fov["width_deg"]**2 + fov["height_deg"]**2) ** 0.5
             ratio = object_size / frame_diag
 
-            
-            #if target_object in ["Heart", "Soul", "NorthAmerica", "M51", "M57"]:
-                #print(
-                    #target_object,
-                    #"equip=", CURRENT_EQUIPMENT,
-                    #"size=", round(object_size, 2),
-                    #"diag=", round(frame_diag, 2),
-                    #"ratio=", round(ratio, 2),
-                    #"bonus=", object_bonus
-            #)
+
+            preference_bonus = 0
+
+            if goal == "galaxies" and obj_type == "galaxy":
+                preference_bonus = 25
+
+            elif goal == "nebulae" and obj_type in ["nebula", "planetary_nebula"]:
+                preference_bonus = 25
+
+            elif goal == "widefield" and object_size >= 1.0:
+                preference_bonus = 8
+
+            elif goal == "small_targets" and object_size <= 0.5:
+                preference_bonus = 8
+
             if obj_type in ["planetary_nebula"]:
                 ideal_min = 0.02
                 ideal_max = 0.20
@@ -844,15 +841,8 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
             elif obj_type == "cluster" and moon_illumination > 50:
                 object_bonus += 2
                 
-            #print(
-                #f"{target_object:15} "
-                #f"type={obj_type:15} "
-                #f"ratio={ratio:.2f} "
-                #f"bonus={object_bonus}"
-            #)
 
-            
-            result["score"] = max(0, min(100, result["score"] + object_bonus))
+            result["score"] = max(0, min(100, result["score"] + object_bonus + preference_bonus))
 
             scores.append(result["score"])
             hour_details.append(result["details"])
@@ -879,45 +869,45 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
         )
             
         candidates.append({
-            "start": window[0]["time"],
-            "end": window[-1]["time"] + timedelta(hours=1),
-            "score": avg,
-            "hour_scores": scores,
-            "details": hour_details,
-            "clouds": round(
-                sum(
-                    h["cloud_cover_low"] * 0.2 +
-                    h["cloud_cover_mid"] * 0.3 +
-                    h["cloud_cover_high"] * 0.5
-                    for h in window
-                ) / len(window)
-            ),
-            "humidity": round(
-                sum(h["relative_humidity_2m"] for h in window) / len(window)
-            ),
-            "wind": round(
-                sum(h["wind_speed_10m"] for h in window) / len(window),
-                1
-            ),
-            "moon_impact": moon_impacts[0],
-            "moon_penalty": round(
-                sum(moon_penalties) / len(moon_penalties),
-                1
-            ),
-            "moon_elevation": moon_avg,
-            "moon_sep": round(
-                sum(d["moon_sep"] for d in hour_details) / len(hour_details),
-                1
-            ),
-            "target_altitude": round(
-                sum(d["target_altitude"] for d in hour_details) / len(hour_details),
-                1
-            ),
-            "sqm": round(
-                sum(d["sqm"] for d in hour_details) / len(hour_details),
-                2
-            ),
-        })
+                "start": window[0]["time"],
+                "end": window[-1]["time"] + timedelta(hours=1),
+                "score": avg,
+                "hour_scores": scores,
+                "details": hour_details,
+                "clouds": round(
+                    sum(
+                        h["cloud_cover_low"] * 0.2 +
+                        h["cloud_cover_mid"] * 0.3 +
+                        h["cloud_cover_high"] * 0.5
+                        for h in window
+                    ) / len(window)
+                ),
+                "humidity": round(
+                    sum(h["relative_humidity_2m"] for h in window) / len(window)
+                ),
+                "wind": round(
+                    sum(h["wind_speed_10m"] for h in window) / len(window),
+                    1
+                ),
+                "moon_impact": moon_impacts[0],
+                "moon_penalty": round(
+                    sum(moon_penalties) / len(moon_penalties),
+                    1
+                ),
+                "moon_elevation": moon_avg,
+                "moon_sep": round(
+                    sum(d["moon_sep"] for d in hour_details) / len(hour_details),
+                    1
+                ),
+                "target_altitude": round(
+                    sum(d["target_altitude"] for d in hour_details) / len(hour_details),
+                    1
+                ),
+                "sqm": round(
+                    sum(d["sqm"] for d in hour_details) / len(hour_details),
+                    2
+                ),
+            })
     return sorted(candidates, key=lambda x: x["score"], reverse=True)[:limit]
 
 def forecast_astro(
@@ -926,9 +916,9 @@ def forecast_astro(
     city,
     bortle,
     target="deep_sky",
-    equipment="None"
+    equipment=None,
+    goal="balanced"
 ):
-
     if equipment is None:
         equipment = load_user_profile()["equipment"]["primary"]
 
@@ -936,57 +926,32 @@ def forecast_astro(
         weather = fetch_weather(lat, lon)
     except Exception as e:
         print("ERREUR fetch_weather =", repr(e))
-        return []
+        weather = None
 
     if weather is None:
-        print("Prévisions météo indisponibles.")
-        return []
-
-    rows = parse_hourly_weather(weather)
+        print("Prévisions météo indisponibles, utilisation météo fallback.")
+        rows = fake_clear_weather()
+    else:
+        rows = parse_hourly_weather(weather)
 
     results = []
     today = datetime.now(ZoneInfo(TIMEZONE)).date()
 
     for d in range(7):
         night_date = today + timedelta(days=d)
-
-        current_date = datetime.combine(
-            night_date,
-            datetime.min.time()
-        )
+        current_date = datetime.combine(night_date, datetime.min.time())
 
         phase = moon_phase(current_date.date())
         illumination = round(moon_illumination_from_phase(phase))
 
-        city_info = LocationInfo(
-            city,
-            "Switzerland",
-            TIMEZONE,
-            lat,
-            lon
-        )
+        city_info = LocationInfo(city, "Switzerland", TIMEZONE, lat, lon)
 
         target_date = current_date.date()
 
-        moon_rise = safe_moonrise(
-            city_info.observer,
-            target_date,
-            ZoneInfo(TIMEZONE)
-        )
+        moon_rise = safe_moonrise(city_info.observer, target_date, ZoneInfo(TIMEZONE))
+        moon_set = safe_moonset(city_info.observer, target_date, ZoneInfo(TIMEZONE))
 
-        moon_set = safe_moonset(
-            city_info.observer,
-            target_date,
-            ZoneInfo(TIMEZONE)
-        )
-
-        hours = night_hours_rough(
-            rows,
-            current_date,
-            lat,
-            lon,
-            city
-        )
+        hours = night_hours_rough(rows, current_date, lat, lon, city)
 
         if not hours:
             continue
@@ -1002,13 +967,14 @@ def forecast_astro(
                 city_info.observer,
                 bortle,
                 target,
-                obj_name
+                obj_name,
+                goal=goal
             )
-            
-            if not top_windows:
-                    continue
-                
 
+            if not top_windows:
+                continue
+
+            top_windows.sort(key=lambda x: x["score"], reverse=True)
             best = top_windows[0]
 
             all_results.append({
@@ -1018,26 +984,22 @@ def forecast_astro(
             })
 
         if not all_results:
-                continue
-        
-        all_results.sort(
-            key=lambda x: x["score"],
-            reverse=True
-        )
+            continue
 
+        all_results.sort(key=lambda x: x["score"], reverse=True)
         best_score = all_results[0]["score"]
 
         best_results = [
             r for r in all_results
             if r["score"] == best_score
-]
+        ]
 
         best = best_results[0]["window"]
         best_object = best_results[0]["object"]
-        best_objects = [r["object"] for r in best_results]
 
+        top3 = all_results[:3]
         night_score = round(
-            sum(r["score"] for r in all_results[:3]) / len(all_results[:3])
+            sum(r["score"] for r in top3) / len(top3)
         )
 
         results.append({
@@ -1051,7 +1013,7 @@ def forecast_astro(
             "object": best_object,
             "best_objects": [
                 r["object"]
-                for r in all_results[:3]
+                for r in top3
                 if r["score"] == best_score
             ],
             "top_objects": [
@@ -1101,7 +1063,29 @@ def forecast_astro(
                 ),
             }
         })
+
     return results
+
+
+def fake_clear_weather():
+    rows = []
+    now = datetime.now(ZoneInfo(TIMEZONE))
+
+    for i in range(24 * 7):
+        rows.append({
+            "time": now + timedelta(hours=i),
+            "cloud_cover": 0,
+            "cloud_cover_low": 0,
+            "cloud_cover_mid": 0,
+            "cloud_cover_high": 0,
+            "precipitation": 0,
+            "relative_humidity_2m": 50,
+            "visibility": 20000,
+            "wind_speed_10m": 5,
+            "temperature_2m": 10,
+        })
+
+    return rows
 
 def get_location_by_ip():
     try:
@@ -1125,7 +1109,6 @@ def get_location_by_ip():
         }
     
 if __name__ == "__main__":
-    #print   ("TEST FRANCK 1234")
     parser = argparse.ArgumentParser()
     parser.add_argument(
             "--equipment",
@@ -1138,6 +1121,20 @@ if __name__ == "__main__":
         action="store_true",
         help="Comparer tous les profils matériels"
     )
+
+    parser.add_argument(
+        "--goal",
+        choices=[
+        "balanced",
+        "galaxies",
+        "nebulae",
+        "widefield",
+        "small_targets",
+        "highest_score"
+    ],
+        default="balanced",
+        help="Préférence de sélection des objets"
+)
     
     args = parser.parse_args()
 
@@ -1145,30 +1142,15 @@ if __name__ == "__main__":
 
         print("Nombre objets :", len(CATALOG))
 
-        for name, obj in CATALOG.items():
-            print(
-                name,
-                obj.get("type", "?"),
-                obj.get(
-                    "size_arcmin",
-                    obj.get("width_arcmin", "?")
-                )
-            )
-            print("\n=== COMPARAISON MATÉRIEL ===")
 
         for profile in list_equipment():
             set_current_equipment(profile)
 
             fov = get_fov()
-            print(
-                f"\n--- {profile} --- "
-                f"FOV={fov['width_deg']:.2f}° x {fov['height_deg']:.2f}°"
-            )
             location = get_default_location()
 
             user_profile = load_user_profile()
 
-            print("USER PROFILE PRIMARY =", user_profile["equipment"]["primary"])
 
             nights = forecast_astro(
                 location["latitude"],
@@ -1176,13 +1158,11 @@ if __name__ == "__main__":
                 location["name"],
                 load_user_profile()["preferences"]["bortle"],
                 "deep_sky",
-                equipment=selected_equipment
+                equipment=selected_equipment, goal=args.goal
             )
 
             if nights is None:
                 nights = []
-            print("NIGHTS =", type(nights), nights is None)
-            print("nuits trouvées :", len(nights))
 
             top = sorted(
                     nights,
@@ -1224,9 +1204,10 @@ if __name__ == "__main__":
         lat,
         lon,
         city,
-        bortle,
-        TARGET,
-        equipment=selected_equipment
+        bortle=3,
+        target=TARGET,
+        equipment=selected_equipment,
+        goal=args.goal
 )
 
 if nights is None:
@@ -1311,54 +1292,27 @@ top_nights = sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
         ##"km/h"
         
     #)
-
-            
+                
 top_nights = sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
 
 for i, night in enumerate(top_nights, 1):
     print(f"#{i} - {night['date']}")
 
-    obj_key = night["object"]
-    obj = CATALOG.get(obj_key, {"name": obj_key})
-
-    best_objects = night.get(
-    "best_objects",
-    [night["object"]]
-)
+    best_objects = night.get("best_objects") or [night["object"]]
 
     if len(best_objects) == 1:
         obj_key = best_objects[0]
         obj = CATALOG.get(obj_key, {"name": obj_key})
 
-        print(
-            f"Objet recommandé : "
-            f"{obj['name']} ({obj_key})"
-    )
+        print(f"Objet recommandé : {obj['name']} ({obj_key})")
+
     else:
-        print("Objets recommandés (ex æquo) :")
+        print("Objets recommandés (ex aequo) :")
 
         for obj_key in best_objects:
-            obj = CATALOG.get(
-            obj_key,
-            {"name": obj_key}
-        )
+            obj = CATALOG.get(obj_key, {"name": obj_key})
+            print(f" - {obj['name']} ({obj_key})")
 
-            print(
-                f"  - {obj['name']} ({obj_key})"
-        )
-    #####print(f"Score objet      : {night['best_object_score']}/100")
-    ####print(f"Score nuit       : {night['score']}/100")
-    ###print(f"SQM              : {night['top_windows'][0]['sqm']:.2f}")
-    ##print("Top objets :")
-    #for obj in night["top_objects"][:3]:
-
-            #######print(
-                ######f"  {obj['name']} | "
-                #####f"score={obj['score']} | "
-                ####f"alt={obj['altitude']}° | "
-                ###f"sep lune={obj['moon_sep']}° | "
-                ##f"sqm={obj['sqm']}"
-            #)   
                   
     print()
 
