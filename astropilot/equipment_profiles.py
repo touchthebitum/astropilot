@@ -35,9 +35,16 @@ EQUIPMENT_PROFILES = {
         "sensor_width_mm": 19.1,
         "sensor_height_mm": 13.0,
     },
+
+    "samyang135_2600": {
+        "name": "Samyang 135 + ASI2600",
+        "focal_length_mm": 135,
+        "sensor_width_mm": 23.5,
+        "sensor_height_mm": 15.7,
+    },
 }
 
-CURRENT_EQUIPMENT = "redcat51_2600"
+CURRENT_EQUIPMENT = "samyang135_2600"
 
 
 def field_of_view_deg(focal_length_mm, sensor_mm):
