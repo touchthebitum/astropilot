@@ -96,7 +96,7 @@ def compare_object_to_equipment(object_size_arcmin, object_type="unknown", objec
     object_size_deg = object_size_arcmin / 60
     ratio = object_size_deg / frame_diag
 
-    print("DEBUG SCALE =", object_type, object_scale)
+    #print("DEBUG SCALE =", object_type, object_scale)
 
     if object_type == "planetary_nebula":
         ideal_min, ideal_max = 0.02, 0.20
@@ -184,8 +184,10 @@ def resolution_score(arcsec_pixel, object_type="unknown", object_scale="medium")
             ideal = 0.6
         elif object_scale == "small":
             ideal = 0.8
-        else:
+        elif object_scale == "medium":
             ideal = 1.2
+        else:  # large / huge
+            ideal = 2.0
 
     elif object_type == "cluster":
         ideal = 2.0
@@ -198,13 +200,6 @@ def resolution_score(arcsec_pixel, object_type="unknown", object_scale="medium")
 
     score = 100 * min(ideal / arcsec_pixel,
                       arcsec_pixel / ideal)
-
-    print(
-        "RESDEBUG",
-        object_type,
-        arcsec_pixel,
-        score
-    )
 
     return max(0, min(100, round(score)))
 

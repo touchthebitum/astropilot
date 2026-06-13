@@ -997,12 +997,17 @@ def best_setup_for_object(object_name):
 
         result = compare_object_to_equipment(
             obj.get("size_arcmin", 20),
-            obj.get("type", "unknown")
+            obj.get("type", "unknown"),
+            obj.get("scale", "medium"),
         )
 
         results.append({
             "equipment": eq_name,
-            "score": result["equipment_score"],
+            "score": result["combined_score"],
+            "equipment_score": 
+        result["equipment_score"],
+            "resolution_score":
+        result["resolution_score"],
             "frame_bonus": result["frame_bonus"],
             "ratio": result["ratio"],
         })
@@ -1216,6 +1221,36 @@ def get_location_by_ip():
             "country": "Switzerland",
         }
     
+def best_equipment_for_object(object_name):
+    obj = CATALOG.get(object_name)
+
+    if not obj:
+        return None
+
+    results = []
+
+    for eq_name in list_equipment():
+        set_current_equipment(eq_name)
+
+        result = compare_object_to_equipment(
+            obj.get("size_arcmin", 20),
+            obj.get("type", "unknown"),
+            obj.get("scale", "medium"),
+        )
+
+        results.append({
+            "equipment": eq_name,
+            "score": result["combined_score"],
+        })
+
+    results.sort(
+        key=lambda x: x["score"],
+        reverse=True
+    )
+
+    return results[0]
+
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -1357,6 +1392,15 @@ obj_key = best_objects[0]
 obj = CATALOG.get(obj_key, {"name": obj_key})
 
 print(f"Objet recommandé : {obj['name']} ({obj_key})")
+
+best_setup = best_equipment_for_object(obj_key)
+
+if best_setup:
+    print(
+        f"Meilleur setup : "
+        f"{best_setup['equipment']} "
+        f"(score {best_setup['score']})"
+    )
 
 if args.goal == "best_setup":
     print("\nMatériels conseillés :")
