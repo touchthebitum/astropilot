@@ -16,15 +16,18 @@ EQUIPMENT_PROFILES = {
         "focal_length_mm": 250,
         "sensor_width_mm": 23.5,
         "sensor_height_mm": 15.7,
+        "pixel_size_mm": 3.76,
     },
     "evostar72_533": {
         "name": "Evostar 72ED + ASI533MC",
         "focal_length_mm": 420,
         "sensor_width_mm": 11.3,
         "sensor_height_mm": 11.3,
+        "pixel_size_mm": 3.76,
     },
     "c8_hyperstar_2600": {
         "name": "C8 HyperStar + ASI2600MC",
+        "pixel_size_mm": 3.76,
         "focal_length_mm": 390,
         "sensor_width_mm": 23.5,
         "sensor_height_mm": 15.7,
@@ -34,6 +37,7 @@ EQUIPMENT_PROFILES = {
         "focal_length_mm": 1625,
         "sensor_width_mm": 19.1,
         "sensor_height_mm": 13.0,
+        "pixel_size_mm": 4.63,
     },
 
     "samyang135_2600": {
@@ -41,6 +45,7 @@ EQUIPMENT_PROFILES = {
         "focal_length_mm": 135,
         "sensor_width_mm": 23.5,
         "sensor_height_mm": 15.7,
+        "pixel_size_mm": 3.76,
     },
 }
 
@@ -80,6 +85,18 @@ def compare_object_to_equipment(object_size_arcmin, object_type="unknown", equip
     height = fov["height_deg"]
     frame_diag = math.sqrt(width ** 2 + height ** 2)
 
+
+    focal_mm = equipment.get("focal_length_mm")
+    pixel_um = equipment.get("pixel_size_um") or equipment.get("pixel_size_mm")
+
+    print("DEBUG", equipment ["name"], focal_mm, pixel_um)
+    print(equipment)
+
+    if focal_mm and pixel_um:
+        arcsec_pixel = round(206.265 * pixel_um / focal_mm, 2)
+    else:
+        arcsec_pixel = None
+
     object_size_deg = object_size_arcmin / 60
     ratio = object_size_deg / frame_diag
 
@@ -110,7 +127,36 @@ def compare_object_to_equipment(object_size_arcmin, object_type="unknown", equip
         "ratio": round(ratio, 3),
         "object_size_deg": round(object_size_deg, 2),
         "frame_diag_deg": round(frame_diag, 2),
+        "arcsec_pixel": arcsec_pixel,
+        "resolution_score": resolution_score(arcsec_pixel, object_type),
     }
+def resolution_score(arcsec_pixel, object_type="unknown"):
+    """
+    Score 0-100 basé sur l'échantillonnage.
+    """
+
+    if arcsec_pixel is None:
+        return 50
+
+    if object_type == "planetary_nebula":
+        ideal = 0.8
+
+    elif object_type == "galaxy":
+        ideal = 1.2
+
+    elif object_type == "cluster":
+        ideal = 2.0
+
+    elif object_type == "nebula":
+        ideal = 3.0
+
+    else:
+        ideal = 2.0
+
+    score = 100 * min(ideal / arcsec_pixel,
+                      arcsec_pixel / ideal)
+
+    return max(0, min(100, round(score)))
 
 def equipment_match_score(object_size_arcmin, object_type="unknown", equipment=None):
     """

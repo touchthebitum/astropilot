@@ -958,11 +958,19 @@ def compare_equipment_for_object(object_name):
             obj.get("type", "unknown"),
         )
 
+
+        combined_score = round(
+            0.7 * result["equipment_score"]
+            + 0.3 * result["resolution_score"]
+        )
         results.append({
             "equipment": eq_name,
-            "score": result["equipment_score"],
+            "score": combined_score,
+            "equipment_score": result["equipment_score"],
+            "resolution_score": result["resolution_score"],
             "ratio": result["ratio"],
             "frame_bonus": result["frame_bonus"],
+            "arcsec_pixel": result["arcsec_pixel"],
         })
 
     results.sort(key=lambda x: x["score"], reverse=True)
@@ -975,9 +983,11 @@ def compare_equipment_for_object(object_name):
             f"{r['equipment']:25} "
             f"score={r['score']:3} "
             f"frame={r['frame_bonus']:2} "
-            f"ratio={r['ratio']:.3f}"
-        )
-
+            f"ratio={r['ratio']:.3f} "
+            f"res={r['arcsec_pixel']}"
+            f"eq={r['equipment_score']}"
+            f" resS={r['resolution_score']}"
+    )
 def best_setup_for_object(object_name):
     obj = CATALOG.get(object_name)
 
