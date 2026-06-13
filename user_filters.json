@@ -1,0 +1,32 @@
+{
+  "filters": [
+    {
+      "name": "Baader Ha 6.5nm Highspeed",
+      "type": "Ha",
+      "bandwidth_nm": 6.5,
+      "optimized_for": "fast",
+      "size": "1.25"
+    },
+    {
+      "name": "Baader OIII 6.5nm Highspeed",
+      "type": "OIII",
+      "bandwidth_nm": 6.5,
+      "optimized_for": "fast",
+      "size": "1.25"
+    },
+    {
+      "name": "Baader SII 6.5nm Highspeed",
+      "type": "SII",
+      "bandwidth_nm": 6.5,
+      "optimized_for": "fast",
+      "size": "1.25"
+    },
+    {
+      "name": "LRGB 1.25",
+      "type": "LRGB",
+      "bandwidth_nm": null,
+      "optimized_for": "all",
+      "size": "1.25"
+    }
+  ]
+}

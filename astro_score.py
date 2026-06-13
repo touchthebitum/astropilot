@@ -1,4 +1,5 @@
 import sys
+import json
 import requests
 import warnings
 from datetime import datetime, timedelta
@@ -1085,6 +1086,38 @@ def recommended_exposure(obj, bortle=4):
 
     return round(hours, 1)
 
+def load_user_filters():
+    try:
+        with open("user_filters.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data.get("filters", [])
+    except Exception as e:
+        print(f"Erreur chargement filtres : {e}")
+        return []
+    
+def recommend_filter(obj):
+    filters = load_user_filters()
+
+    obj_type = obj.get("type", "").lower()
+
+    if obj_type in ["nebula", "planetary_nebula"]:
+        for f in filters:
+            if f.get["type"] == "Ha":
+                return f.get("name")
+
+    elif obj_type == "galaxy":
+        for f in filters:
+            if f.get("type") == "LRGB":
+                return f.get("name")
+
+    elif obj_type == "cluster":
+        for f in filters:
+            if f("type") == "LRGB":
+                return f("name")
+
+    return "aucun filtre recommandé"
+    
+
 def forecast_astro(
     lat,
     lon,
@@ -1485,6 +1518,8 @@ if best_setup:
     )
     exposure = recommended_exposure(CATALOG[obj_key])
     print(f"Temps de pose conseillé : {exposure} h")
+    best_filter = recommend_filter(obj)
+    print(f"Filtre conseillé : {best_filter}")
 
 if args.goal == "best_setup":
     print("\nMatériels conseillés :")
