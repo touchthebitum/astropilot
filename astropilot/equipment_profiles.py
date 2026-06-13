@@ -135,7 +135,7 @@ def compare_object_to_equipment(object_size_arcmin, object_type="unknown", objec
         
     elif object_type == "cluster":
         ideal_min, ideal_max = 0.10, 0.60
-    elif object_type == "nebula":
+    elif object_type in ["nebula","emission_nebula", "supernova_remnant"]:
         if object_scale == "huge":
             ideal_min, ideal_max = 0.05, 0.45
         elif object_scale == "large":
@@ -169,8 +169,10 @@ def compare_object_to_equipment(object_size_arcmin, object_type="unknown", objec
     elif object_type == "cluster":
         resolution_weight = 0.35
 
-    else:   # nebula
+    elif object_type in ["nebula", "emission_nebula", "supernova_remnant"]:
         resolution_weight = 0.10
+    else:
+        resolution_weight = 0.30
 
     framing_weight = 1 - resolution_weight
     res_score = resolution_score(arcsec_pixel, object_type, object_scale)

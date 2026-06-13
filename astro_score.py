@@ -1100,24 +1100,29 @@ def recommend_filter(obj):
 
     obj_type = obj.get("type", "").lower()
 
-    if obj_type in ["nebula", "planetary_nebula"]:
-        for f in filters:
-            if f.get["type"] == "Ha":
-                return f.get("name")
+    if obj_type == "emission_nebula":
+        return [
+            f.get("name")
+            for f in filters
+            if f.get("type") in ["Ha", "OIII", "SII"]
+        ]
 
-    elif obj_type == "galaxy":
-        for f in filters:
-            if f.get("type") == "LRGB":
-                return f.get("name")
+    elif obj_type == "supernova_remnant":
+        return [
+            f.get("name")
+            for f in filters
+            if f.get("type") in ["OIII", "Ha", "SII"]
+        ]
 
-    elif obj_type == "cluster":
-        for f in filters:
-            if f("type") == "LRGB":
-                return f("name")
+    elif obj_type in ["galaxy", "cluster"]:
+        return [
+            f.get("name")
+            for f in filters
+            if f.get("type") == "LRGB"
+        ]
 
-    return "aucun filtre recommandé"
+    return []
     
-
 def forecast_astro(
     lat,
     lon,
@@ -1518,8 +1523,14 @@ if best_setup:
     )
     exposure = recommended_exposure(CATALOG[obj_key])
     print(f"Temps de pose conseillé : {exposure} h")
-    best_filter = recommend_filter(obj)
-    print(f"Filtre conseillé : {best_filter}")
+    
+    best_filters = recommend_filter(obj)
+
+    if best_filters:
+        print("Filtres conseillés : " + ", ".join(best_filters))
+    else:
+        print("Filtres conseillés : aucun")
+
 
 if args.goal == "best_setup":
     print("\nMatériels conseillés :")
