@@ -1053,7 +1053,7 @@ def imaging_score(obj):
         0.4 * surf_score
     )
 
-def recommended_exposure(obj, bortle=4):
+def recommended_exposure(obj, bortle=4, filter_type=None):
     """
     Retourne le temps de pose recommandé en heures.
     """
@@ -1083,7 +1083,15 @@ def recommended_exposure(obj, bortle=4):
         base_hours.get(difficulty, 6)
         * bortle_factor.get(bortle, 1.0)
     )
+    filter_factor = {
+        "LRGB": 1.0,
+        "Ha": 1.5,
+        "OIII": 2.0,
+        "SII": 2.5,
+    }
 
+    if filter_type:
+        hours *=filter_factor.get(filter_type, 1.0)
     return round(hours, 1)
 
 def load_user_filters():
@@ -1404,13 +1412,70 @@ if __name__ == "__main__":
         "--object",
         type=str,
         help="Comparer les matériels pour un objet"
-    
     )
+
+    parser.add_argument(
+        "--target-object",
+        type=str,
+        help="Forcer l'analyse complète d'un objet"
+    )
+
     args = parser.parse_args()
 
     if args.object:
         compare_equipment_for_object(args.object)
         exit()
+
+    if args.target_object:
+        obj_key = args.target_object
+        obj = CATALOG.get(obj_key)
+
+        if not obj:
+            print(f"Objet inconnu : {obj_key}")
+            exit()
+
+        print(f"Objet forcé : {obj['name']} ({obj_key})")
+
+        best_setup = best_equipment_for_object(obj_key)
+
+        if best_setup:
+            print(
+                f"Meilleur setup : "
+                f"{best_setup['equipment']} "
+                f"(score {best_setup['score']})"
+            )
+
+        best_filters = recommend_filter(obj)
+
+        if best_filters:
+            print("Filtres conseillés : " + ", ".join(best_filters))
+
+            for filter_name in best_filters:
+                filter_type = None
+
+                if "Ha" in filter_name:
+                    filter_type = "Ha"
+                elif "OIII" in filter_name:
+                    filter_type = "OIII"
+                elif "SII" in filter_name:
+                    filter_type = "SII"
+                elif "LRGB" in filter_name:
+                    filter_type = "LRGB"
+
+                exposure = recommended_exposure(
+                obj,
+                    filter_type=filter_type
+                )
+
+                print(f"Temps conseillé {filter_name} : {exposure} h")
+
+    else:
+        exposure = recommended_exposure(obj)
+        print(f"Temps de pose conseillé : {exposure} h")
+        print("Filtres conseillés : aucun")
+
+    exit()
+
 
     if args.compare:
 
@@ -1521,16 +1586,33 @@ if best_setup:
         f"{best_setup['equipment']} "
         f"(score {best_setup['score']})"
     )
+best_filters = recommend_filter(obj)
+
+if best_filters:
+    print("Filtres conseillés : " + ", ".join(best_filters))
+
+    for filter_name in best_filters:
+        filter_type = None
+
+        if "Ha" in filter_name:
+            filter_type = "Ha"
+        elif "OIII" in filter_name:
+            filter_type = "OIII"
+        elif "SII" in filter_name:
+            filter_type = "SII"
+        elif "LRGB" in filter_name:
+            filter_type = "LRGB"
+
+        exposure = recommended_exposure(
+            CATALOG[obj_key],
+            filter_type=filter_type
+        )
+
+        print(f"Temps conseillé {filter_name} : {exposure} h")
+else:
     exposure = recommended_exposure(CATALOG[obj_key])
     print(f"Temps de pose conseillé : {exposure} h")
-    
-    best_filters = recommend_filter(obj)
-
-    if best_filters:
-        print("Filtres conseillés : " + ", ".join(best_filters))
-    else:
-        print("Filtres conseillés : aucun")
-
+    print("Filtres conseillés : aucun")
 
 if args.goal == "best_setup":
     print("\nMatériels conseillés :")
