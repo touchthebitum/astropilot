@@ -967,6 +967,9 @@ def compare_equipment_for_object(object_name):
 
     results.sort(key=lambda x: x["score"], reverse=True)
 
+    print(f"Object : {CATALOG[object_name]['name']}")
+    print(f"Taille : {CATALOG[object_name]['size_arcmin']} arcmin")
+
     for r in results:
         print(
             f"{r['equipment']:25} "
@@ -1246,7 +1249,7 @@ if __name__ == "__main__":
 
     if args.object:
         compare_equipment_for_object(args.object)
-        sys.exit(0)
+        exit()
 
     if args.compare:
 
