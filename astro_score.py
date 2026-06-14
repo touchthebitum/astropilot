@@ -17,7 +17,7 @@ from astropilot.catalog import CATALOG
 from astropilot.equipment_profiles import CURRENT_EQUIPMENT, get_fov
 from astropilot.equipment_profiles import equipment_match_score
 from astropilot.equipment_profiles import capture_score
-from astropilot.user_profile import get_default_location, load_user_profile, favorite_targets
+from astropilot.user_profile import (get_default_location, load_user_profile, favorite_targets, get_available_equipment)
 from astropilot.equipment_profiles import (
     get_fov,
     set_current_equipment,
@@ -740,7 +740,7 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
         moon_penalties = []
 
         profile = load_user_profile()
-        min_alt = profile["preferences"]["min_altitude_deg"]
+        min_alt = profile.get("preference",{}).get("min_altitude_deg",30)
 
         for h in window:
             moon_elevation = moon.elevation(
@@ -759,7 +759,7 @@ def best_windows(hours: list[dict], moon_illumination: float, moon_rise, moon_se
             )
 
             profile = load_user_profile()
-            min_alt = profile["preferences"]["min_altitude_deg"]
+            min_alt = profile.get("preferences", {}).get("min_altitude_deg", 30)
             if target_alt < min_alt:
                 continue
 
@@ -1149,7 +1149,7 @@ def forecast_astro(
     goal="nebulae"
 ):
     if equipment is None:
-        equipment = load_user_profile()["equipment"]["primary"]
+        equipment = equipment or get_active_equipment()
 
     try:
         weather = fetch_weather(lat, lon)
@@ -1490,7 +1490,7 @@ if __name__ == "__main__":
         print("Nombre objets :", len(CATALOG))
 
 
-        for profile in list_equipment():
+        for profile in get_available_equipment():
             set_current_equipment(profile)
 
             fov = get_fov()
@@ -1503,7 +1503,7 @@ if __name__ == "__main__":
                 location["latitude"],
                 location["longitude"],
                 location["name"],
-                load_user_profile()["preferences"]["bortle"],
+                load_user_profile().get("preferences", {}).get("bortle", 4),
                 "deep_sky",
                 equipment=None, goal=args.goal
             )
@@ -1545,8 +1545,7 @@ if __name__ == "__main__":
         bortle = 3
         target = "deep_sky"
     user_profile = load_user_profile()
-    selected_equipment = args.equipment or user_profile["equipment"]["primary"]
-
+    selected_equipment = args.equipment or get_active_equipment()
     nights = forecast_astro(
         lat,
         lon,

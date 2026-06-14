@@ -38,4 +38,8 @@ def get_default_location():
     raise ValueError(f"Localisation inconnue : {location_id}")
 
 def favorite_targets():
-    return load_user_profile()["preferences"]["favorite_targets"]
+    return (
+        load_user_profile()
+        .get("preferences", {})
+        .get("favorite_targets", ["galaxy", "nebula"])
+    )
