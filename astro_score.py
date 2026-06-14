@@ -506,6 +506,21 @@ def project_progress_bonus(object_name):
 
     return round(progress * 20, 1)
 
+def estimate_portfolio_nights():
+    projects = get_projects()
+
+    total_remaining = 0
+
+    for project in projects.values():
+        target = project.get("target_hours", 0)
+        done = project.get("hours", 0)
+
+        total_remaining += max(0, target - done)
+
+    HOURS_PER_NIGHT = 4
+
+    return round(total_remaining / HOURS_PER_NIGHT, 1)
+
 def project_remaining_hours(object_name):
     projects = get_projects()
 
@@ -879,6 +894,8 @@ def show_portfolio_dashboard():
     print("\n----- TOTAL -----")
     print(f"Heures réalisées : {total_done:.1f} h")
     print(f"Heures restantes : {total_remaining:.1f} h")
+    nights = estimate_portfolio_nights()
+    print(f"Nuits restantes estimées : {nights}")
     print(f"Progression globale : {global_progress:.1f}%")
 
 def show_portfolio_ranking():
