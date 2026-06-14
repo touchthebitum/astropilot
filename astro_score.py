@@ -718,21 +718,21 @@ def recommend_project():
         progress = project_progress(name)
         completion_bonus = progress / 5
 
-    season_bonus = altitude_bonus(
-        CATALOG.get(name, {})
-    )
-    season_window = season_window_bonus(CATALOG.get(name, {}))
-    roi = project_roi(name)
+        season_bonus = altitude_bonus(
+            CATALOG.get(name, {})
+        )
+        season_window = season_window_bonus(CATALOG.get(name, {}))
+        roi = project_roi(name)
 
-    portfolio_score = (
-        priority * 0.6
-        + season_bonus
-        + season_window
-        + roi * 15
-        + completion_bonus
-    )
+        portfolio_score = (
+            priority * 0.6
+            + season_bonus
+            + season_window
+            + roi * 15
+            + completion_bonus
+        )
 
-    candidates.append({
+        candidates.append({
             "name": name,
             "remaining": remaining,
             "priority": priority,
@@ -917,6 +917,7 @@ def show_portfolio_dashboard():
     print(f"Progression globale : {global_progress:.1f}%")
 
 def show_portfolio_ranking():
+
     projects = get_projects()
 
     rows = []
@@ -971,6 +972,39 @@ def show_portfolio_ranking():
             f"roi={r['roi']:.2f}"
         )
 
+def show_completion_forecast():
+
+    projects = get_projects()
+
+    if not projects:
+        return
+
+    capacity = forecast_available_hours(
+        sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
+    )
+
+    print("\n===== PRÉVISION DE CLÔTURE =====\n")
+
+    for name, project in projects.items():
+
+        target = project.get("target_hours", 0)
+        done = project.get("hours", 0)
+
+        remaining = max(0, target - done)
+
+        if remaining <= 0:
+            status = "TERMINÉ"
+        elif remaining <= capacity:
+            status = "TERMINABLE CETTE SEMAINE"
+        else:
+            nights_needed = remaining / 2.0
+            status = f"≈ {nights_needed:.1f} nuits nécessaires"
+
+        print(
+            f"{name:15} "
+            f"reste={remaining:5.1f} h  "
+            f"{status}"
+        )
 
 def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
     penalty = 0
@@ -2225,6 +2259,7 @@ print()
 show_portfolio_dashboard()
 project = recommend_project()
 show_portfolio_ranking()
+show_completion_forecast()
 
 if project:
     print("\n===== PROJET RECOMMANDÉ =====\n")
@@ -2241,4 +2276,5 @@ if project:
     print(f"Bonus saison : {project['season_window']}")
     print(f"Progression : {project['progress']} %")
     print(f"Bonus clôture : {project.get('completion_bonus', 0):.1f}")
+    
     
