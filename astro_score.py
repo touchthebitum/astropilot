@@ -813,6 +813,23 @@ def recommend_project_for_night(top_objects):
     return candidates
 
 
+def forecast_available_hours(nights):
+    total = 0
+
+    for night in nights:
+        window = night.get("best_window")
+
+        if not window:
+            continue
+
+        start = int(window["start"].split(":")[0])
+        end = int(window["end"].split(":")[0])
+
+        total += end - start
+
+    return round(total, 1)
+
+
 def show_project_stats():
     profile = load_user_profile()
 
@@ -852,6 +869,7 @@ def show_project_stats():
             f"Projet principal : "
             f"{best[0]} ({best[1]['hours']:.1f} h)"
         )
+
 
 def show_portfolio_dashboard():
     
@@ -2043,8 +2061,27 @@ if nights is None:
 
 
 top_nights = sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
-                
-top_nights = sorted(nights, key=lambda x: x["score"], reverse=True)[:3]
+
+print("\n===== CAPACITÉ À VENIR =====")
+
+for night in top_nights:
+
+    window = night.get("best_window")
+
+    if window:
+        start = int(window["start"].split(":")[0])
+        end = int(window["end"].split(":")[0])
+        duration = end - start
+    else:
+        duration = 0
+
+    print(f"{night['date']} : {duration:.1f} h")
+
+print(
+    f"Total prévisionnel : "
+    f"{forecast_available_hours(top_nights):.1f} h"
+)
+
 
 for i, night in enumerate(top_nights, 1):
     print(f"#{i} - {night['date']}")
