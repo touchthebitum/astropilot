@@ -742,12 +742,15 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
 
     project_bonus = project_progress_bonus(target_object)
 
+    priority_bonus=( 
+    project_priority(target_object) * 0.3)
+
     score = round(
         max(
         0,
         min(
             100,
-            45 - penalty + tb + target_bonus + sqm_bonus + project_bonus
+            45 - penalty + tb + target_bonus + sqm_bonus + project_bonus + priority_bonus
         )
     )
 )
@@ -769,6 +772,7 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     "temperature_bonus": tb,
     "penalty": round(penalty, 1),
     "project_bonus": project_bonus,
+    "priority_bonus": round(priority_bonus, 1),
     
 }
     
