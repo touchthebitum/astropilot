@@ -506,6 +506,18 @@ def project_progress_bonus(object_name):
 
     return round(progress * 15, 1)
 
+def project_remaining_hours(object_name):
+    projects = get_projects()
+
+    if object_name not in projects:
+        return None
+
+    project = projects[object_name]
+    hours = project.get("hours", 0)
+    target_hours = project.get("target_hours", 0)
+
+    return max(0, round(target_hours - hours, 1))
+
 def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
     penalty = 0
 
@@ -1610,6 +1622,11 @@ obj_key = best_objects[0]
 obj = CATALOG.get(obj_key, {"name": obj_key})
 
 print(f"Objet recommandé : {obj['name']} ({obj_key})")
+
+remaining = project_remaining_hours(obj_key)
+
+if remaining is not None:
+    print(f"Temps restant projet : {remaining} h")
 
 best_setup = best_equipment_for_object(obj_key)
 
