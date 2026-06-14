@@ -578,6 +578,37 @@ def log_project_session(object_name, session_hours):
     if remaining is not None:
         print(f"Reste : {remaining} h")
 
+def recommend_project():
+    projects = get_projects()
+
+    candidates = []
+
+    for name, project in projects.items():
+        remaining = project_remaining_hours(name)
+
+        if remaining is None or remaining <= 0:
+            continue
+
+        priority = project_priority(name)
+
+        candidates.append({
+            "name": name,
+            "remaining": remaining,
+            "priority": priority,
+            "hours_done": project.get("hours", 0),
+            "target_hours": project.get("target_hours", 0)
+        })
+
+    if not candidates:
+        return None
+    
+    candidates.sort(
+        key=lambda x: x["priority"],
+        reverse=True
+        )
+    
+    return candidates[0]
+
 def show_project_stats():
     profile = load_user_profile()
 
@@ -603,22 +634,22 @@ def show_project_stats():
             f"reste {remaining:5.1f} h"
             f"prio {priority:5.1f}"
         )
-
-    print()
-    print(f"Temps total acquis : {total_hours:.1f} h")
-    print(f"Nombre de sessions : {len(sessions)}")
+        print()
+        print(f"Temps total acquis : {total_hours:.1f} h")
+        print(f"Nombre de sessions : {len(sessions)}")
 
     if projects:
         best = max(
-            projects.items(),
-            key=lambda x: x[1].get("hours", 0)
-        )
+        projects.items(),
+        key=lambda x: x[1].get("hours", 0)
+    )
 
         print(
             f"Projet principal : "
             f"{best[0]} ({best[1]['hours']:.1f} h)"
         )
 
+   
 
 
 def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
@@ -1800,3 +1831,14 @@ print()
 
 #log_project_session("M31", 1)
 #show_project_stats()
+project = recommend_project()
+
+if project:
+    print("\n===== PROJET RECOMMANDÉ =====\n")
+    print(f"Projet : {project['name']}")
+    print(
+        f"Progression : "
+        f"{project['hours_done']} / {project['target_hours']} h"
+    )
+    print(f"Reste : {project['remaining']:.1f} h")
+    print(f"Priorité : {project['priority']:.1f}")
