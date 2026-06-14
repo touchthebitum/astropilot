@@ -624,10 +624,17 @@ def recommend_project_for_night(top_objects):
     candidates = []
 
     for obj in top_objects:
+        catalog_key = obj.get("catalog_key",obj["name"])
+
+        remaining = project_remaining_hours(catalog_key)
+
+        if remaining is not None and remaining <= 0:
+            continue
+
 
         astro_score = obj["score"]
-        priority = project_priority(obj.get("catalog_key",obj["name"])
-        )
+        priority = project_priority(catalog_key)
+        
         final_score = (
             astro_score * astro_weight
             + priority * project_weight
@@ -640,6 +647,9 @@ def recommend_project_for_night(top_objects):
             "final_score": final_score
         })
 
+        if not candidates:
+            return None
+        
     candidates.sort(
         key=lambda x: x["final_score"],
         reverse=True
@@ -1811,16 +1821,37 @@ night_project = recommend_project_for_night(
 )
 
 if night_project:
+
     print("\n===== PROJET DE CE SOIR =====\n")
-    print(f"Projet           : {night_project['name']}")
-    print(f"Score astro      : {night_project['astro_score']:.1f}")
-    print(f"Priorité projet  : {night_project['priority']:.1f}")
-    print(f"Score final      : {night_project['final_score']:.1f}")
 
-remaining = project_remaining_hours(obj_key)
+    print(f"Projet : {night_project['name']}")
+    print(f"Score astro : {night_project['astro_score']:.1f}")
+    print(f"Priorité projet : {night_project['priority']:.1f}")
+    print(f"Score final : {night_project['final_score']:.1f}")
 
-if remaining is not None:
-    print(f"Temps restant projet : {remaining} h")
+else:
+    print("\nAucun projet actif trouvé")
+
+    obj = CATALOG.get(
+    night_project["name"],
+    {"name": night_project["name"]}
+    )
+
+    print(
+    f"- Priorité projet : "
+    f"{night_project['priority']:.1f}"
+    )
+
+    remaining = project_remaining_hours(
+    obj.get("catalog_key", night_project["name"])
+    )
+
+    if remaining is not None:
+
+        remaining = project_remaining_hours(obj_key)
+
+    if remaining is not None:
+        print(f"Temps restant projet : {remaining} h")
 
 best_setup = best_equipment_for_object(obj_key)
 
