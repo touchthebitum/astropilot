@@ -23,7 +23,7 @@
 - [ ] ROI par projet
 - [ ] ROI par setup
 - [ ] ROI par filtre
-- [ ] Comparaison des projets concurrents
+- [x] Comparaison des projets concurrents
 
 ## Phase 4 - Assistant AstroPilot complet
 - [ ] Recommandation complète de la soirée

@@ -589,6 +589,21 @@ def project_details(object_name):
         "remaining_nights": estimate_remaining_nights(object_name)
     }
 
+def project_roi(object_name):
+    details = project_details(object_name)
+
+    if not details:
+        return 0
+
+    remaining = details["remaining"]
+
+    if remaining <= 0:
+        return 0
+
+    importance = details["importance"]
+
+    return round(importance / remaining, 2)
+
 def save_user_profile(profile):
     with open("data/user_profile.json", "w", encoding="utf-8") as f:
         json.dump(profile, f, indent=4, ensure_ascii=False)
@@ -640,19 +655,35 @@ def recommend_project():
 
         priority = project_priority(name)
 
-        candidates.append({
+    season_bonus = seasonal_priority(
+        CATALOG.get(name, {})
+    )
+
+    roi = project_roi(name)
+
+    portfolio_score = (
+        priority
+        + season_bonus
+        + roi * 5
+    )
+
+    candidates.append({
             "name": name,
             "remaining": remaining,
             "priority": priority,
             "hours_done": project.get("hours", 0),
             "target_hours": project.get("target_hours", 0),
+            "season_bonus": season_bonus,
+            "roi": roi,
+            "portfolio_score": portfolio_score,
         })
+
 
     if not candidates:
         return None
     
     candidates.sort(
-        key=lambda x: x["priority"],
+        key=lambda x: x["portfolio_score"],
         reverse=True
         )
     
@@ -684,11 +715,13 @@ def recommend_project_for_night(top_objects):
         astro_score = obj["score"]
         priority = project_priority(catalog_key)
         season_bonus = seasonal_priority(obj)
+        roi = project_roi(catalog_key)
 
         final_score = (
             astro_score * astro_weight
             + priority * project_weight
             + season_bonus
+            + roi * 5
         )
 
         candidates.append({
@@ -696,7 +729,8 @@ def recommend_project_for_night(top_objects):
             "astro_score": astro_score,
             "priority": priority,
             "final_score": final_score,
-            "season_bonus": season_bonus
+            "season_bonus": season_bonus,
+            "roi": roi
         })
 
         if not candidates:
@@ -1911,11 +1945,17 @@ if night_projects:
         )
         print(
             f"- Nuits estimées : "
-            f"{details['remaining_nights']}")
+            f"{details['remaining_nights']}"
+            )
         print(
             f" - Bonus saisonier : "
             f"{night_project['season_bonus']}"
         )
+        print(
+            f" - ROI projet : "
+            f"{night_project['roi']}"
+        )
+        
         
 
 best_setup = best_equipment_for_object(obj_key)
@@ -1989,3 +2029,5 @@ if project:
     )
     print(f"Reste : {project['remaining']:.1f} h")
     print(f"Priorité : {project['priority']:.1f}")
+    print(f"Score portefeuille : {project['portfolio_score']:.1f}")
+    print(f"ROI : {project['roi']}")
