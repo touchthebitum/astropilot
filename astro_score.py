@@ -518,6 +518,16 @@ def project_remaining_hours(object_name):
 
     return max(0, round(target_hours - hours, 1))
 
+def estimate_remaining_nights(object_name, avg_night_hours=5):
+
+    remaining = project_remaining_hours(object_name)
+
+    if remaining is None:
+        return None
+
+    return max(1, round(remaining / avg_night_hours))
+
+
 def project_priority(object_name):
     projects = get_projects()
 
@@ -563,7 +573,8 @@ def project_details(object_name):
     return {
         "importance": importance,
         "progress": progress,
-        "remaining": remaining
+        "remaining": remaining,
+        "remaining_nights": estimate_remaining_nights(object_name)
     }
 
 def save_user_profile(profile):
@@ -1876,6 +1887,10 @@ if night_project:
             f"- Temps restant : "
             f"{details['remaining']} h"
         )
+        print(
+            f"- Nuits estimées : "
+            f"{details['remaining_nights']}")
+        
 
 best_setup = best_equipment_for_object(obj_key)
 
