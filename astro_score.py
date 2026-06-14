@@ -839,6 +839,7 @@ def show_project_stats():
         )
 
 def show_portfolio_dashboard():
+    
     projects = get_projects()
 
     if not projects:
@@ -880,6 +881,60 @@ def show_portfolio_dashboard():
     print(f"Heures restantes : {total_remaining:.1f} h")
     print(f"Progression globale : {global_progress:.1f}%")
 
+def show_portfolio_ranking():
+    projects = get_projects()
+
+    rows = []
+
+    for name in projects:
+        remaining = project_remaining_hours(name)
+
+        if remaining is None or remaining <= 0:
+            continue
+
+        priority = project_priority(name)
+
+        obj = CATALOG.get(name, {})
+
+        altitude = altitude_bonus(obj)
+        season = season_window_bonus(obj)
+        roi = project_roi(name)
+
+        progress = project_progress(name)
+        completion = progress / 5
+
+        score = (
+            priority * 0.6
+            + altitude
+            + season
+            + roi * 15
+            + completion
+        )
+
+        rows.append({
+            "name": name,
+            "score": score,
+            "priority": priority,
+            "progress": progress,
+            "remaining": remaining,
+            "roi": roi
+        })
+
+    rows.sort(
+        key=lambda x: x["score"],
+        reverse=True
+    )
+
+    print("\n===== CLASSEMENT PORTEFEUILLE =====\n")
+
+    for i, r in enumerate(rows, start=1):
+        print(
+            f"{i}. {r['name']} "
+            f"score={r['score']:.1f} "
+            f"progress={r['progress']:.1f}% "
+            f"reste={r['remaining']:.1f}h "
+            f"roi={r['roi']:.2f}"
+        )
 
 
 def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
@@ -2115,6 +2170,7 @@ print()
 #show_project_stats()
 show_portfolio_dashboard()
 project = recommend_project()
+show_portfolio_ranking()
 
 if project:
     print("\n===== PROJET RECOMMANDÉ =====\n")
