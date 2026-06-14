@@ -552,6 +552,18 @@ def project_priority(object_name):
     base_priority = progress_score + remaining_score
     return round(base_priority * (importance / 5), 1)
 
+def seasonal_priority(obj):
+
+    altitude = obj.get("altitude", 0)
+
+    if altitude < 25:
+        return 20
+
+    elif altitude < 35:
+        return 10
+
+    return 0
+
 def project_details(object_name):
     projects = get_projects()
 
@@ -633,7 +645,7 @@ def recommend_project():
             "remaining": remaining,
             "priority": priority,
             "hours_done": project.get("hours", 0),
-            "target_hours": project.get("target_hours", 0)
+            "target_hours": project.get("target_hours", 0),
         })
 
     if not candidates:
@@ -671,17 +683,20 @@ def recommend_project_for_night(top_objects):
 
         astro_score = obj["score"]
         priority = project_priority(catalog_key)
-        
+        season_bonus = seasonal_priority(obj)
+
         final_score = (
             astro_score * astro_weight
             + priority * project_weight
+            + season_bonus
         )
 
         candidates.append({
             "name": obj["name"],
             "astro_score": astro_score,
             "priority": priority,
-            "final_score": final_score
+            "final_score": final_score,
+            "season_bonus": season_bonus
         })
 
         if not candidates:
@@ -1890,6 +1905,10 @@ if night_project:
         print(
             f"- Nuits estimées : "
             f"{details['remaining_nights']}")
+        print(
+            f" - Bonus saisonier : "
+            f"{night_project['season_bonus']}"
+        )
         
 
 best_setup = best_equipment_for_object(obj_key)
