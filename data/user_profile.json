@@ -21,15 +21,18 @@
     "projects": {
         "M31": {
             "hours": 15.5,
-            "target_hours": 20
+            "target_hours": 20,
+            "importance": 10
         },
         "Rosette": {
             "hours": 3,
-            "target_hours": 12
+            "target_hours": 12,
+            "importance": 6
         },
         "IC1396": {
             "hours": 0,
-            "target_hours": 15
+            "target_hours": 15,
+            "importance": 8
         }
     },
     "sessions": [

@@ -525,6 +525,7 @@ def project_priority(object_name):
         return 0
 
     project = projects[object_name]
+    importance = project.get("importance", 5)
 
     hours = project.get("hours", 0)
     target = project.get("target_hours", 0)
@@ -538,7 +539,8 @@ def project_priority(object_name):
     progress_score = (1 - completion) * 50
     remaining_score = min(remaining, 20)
 
-    return round(progress_score + remaining_score, 1)
+    base_priority = progress_score + remaining_score
+    return round(base_priority * (importance / 5), 1)
 
 def save_user_profile(profile):
     with open("data/user_profile.json", "w", encoding="utf-8") as f:
