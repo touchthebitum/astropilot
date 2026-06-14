@@ -564,6 +564,36 @@ def altitude_bonus(obj):
 
     return 0
 
+def season_remaining_months(obj):
+    ra = obj.get("ra_hours")
+
+    if ra is None:
+        return 6
+
+    current_month = datetime.now().month
+
+    optimal_month = int((ra / 2) % 12) + 1
+
+    diff = (optimal_month - current_month) % 12
+
+    return max(1, 12 - diff)
+
+
+def season_window_bonus(obj):
+    months = season_remaining_months(obj)
+
+    if months <= 1:
+        return 30
+
+    if months <= 2:
+        return 20
+
+    if months <= 4:
+        return 10
+
+    return 0
+
+
 def project_details(object_name):
     projects = get_projects()
 
@@ -658,12 +688,13 @@ def recommend_project():
     season_bonus = altitude_bonus(
         CATALOG.get(name, {})
     )
-
+    season_window = season_window_bonus(CATALOG.get(name, {}))
     roi = project_roi(name)
 
     portfolio_score = (
         priority * 0.6
         + season_bonus
+        + season_window
         + roi * 15
     )
 
@@ -676,6 +707,8 @@ def recommend_project():
             "season_bonus": season_bonus,
             "roi": roi,
             "portfolio_score": portfolio_score,
+            "season_window": season_window,
+            "months_left": season_remaining_months(CATALOG.get(name,{})),
         })
 
 
@@ -2031,4 +2064,6 @@ if project:
     print(f"Bonus altitude : {project['season_bonus']}")
     print(f"ROI : {project['roi']}")
     print(f"Score portefeuille : {project['portfolio_score']:.1f}")
+    print(f"Mois restants : {project['months_left']}")
+    print(f"Bonus saison : {project['season_window']}")
     
