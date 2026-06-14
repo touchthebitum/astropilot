@@ -1,33 +1,33 @@
 {
-  "default_location": {
-    "name": "Buttes",
-    "bortle": 4
-  },
-  "active_equipment": "samyang135_2600",
-  "available_equipment": [
-    "samyang135_2600",
-    "redcat51_2600",
-    "evostar72_533",
-    "c8_hyperstar_2600",
-    "rc8_294"
-  ],
-  "preferences": {
-    "default_goal": "balanced",
-    "prefer_existing_projects": true,
-    "max_setup_changes_per_night": 1
-  },
-  "projects": {
-  "M31": {
-    "hours": 12.5,
-    "target_hours": 20
-  },
-  "Rosette": {
-    "hours": 3,
-    "target_hours": 12
-  },
-  "IC1396": {
-    "hours": 0,
-    "target_hours": 15
-  }
+    "default_location": {
+        "name": "Buttes",
+        "bortle": 4
+    },
+    "active_equipment": "samyang135_2600",
+    "available_equipment": [
+        "samyang135_2600",
+        "redcat51_2600",
+        "evostar72_533",
+        "c8_hyperstar_2600",
+        "rc8_294"
+    ],
+    "preferences": {
+        "default_goal": "balanced",
+        "prefer_existing_projects": true,
+        "max_setup_changes_per_night": 1
+    },
+    "projects": {
+        "M31": {
+            "hours": 14.5,
+            "target_hours": 20
+        },
+        "Rosette": {
+            "hours": 3,
+            "target_hours": 12
+        },
+        "IC1396": {
+            "hours": 0,
+            "target_hours": 15
+        }
+    }
 }
-  }

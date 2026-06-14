@@ -504,7 +504,7 @@ def project_progress_bonus(object_name):
     if progress >= 1:
         return -50
 
-    return round(progress * 15, 1)
+    return round(progress * 20, 1)
 
 def project_remaining_hours(object_name):
     projects = get_projects()
@@ -517,6 +517,39 @@ def project_remaining_hours(object_name):
     target_hours = project.get("target_hours", 0)
 
     return max(0, round(target_hours - hours, 1))
+
+def save_user_profile(profile):
+    with open("data/user_profile.json", "w", encoding="utf-8") as f:
+        json.dump(profile, f, indent=4, ensure_ascii=False)
+
+def log_project_session(object_name, session_hours):
+    profile = load_user_profile()
+
+    projects = profile.get("projects", {})
+
+    if object_name not in projects:
+        print(f"Projet {object_name} introuvable")
+        return
+
+    current_hours = projects[object_name].get("hours", 0)
+
+    projects[object_name]["hours"] = round(
+        current_hours + float(session_hours),
+        1
+    )
+
+    save_user_profile(profile)
+
+    remaining = project_remaining_hours(object_name)
+
+    print(f"Projet {object_name} mis à jour")
+    print(f"Ancien total : {current_hours} h")
+    print(f"Ajout : {session_hours} h")
+    print(f"Nouveau total : {projects[object_name]['hours']} h")
+
+    if remaining is not None:
+        print(f"Reste : {remaining} h")
+
 
 def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
     penalty = 0
@@ -1250,7 +1283,8 @@ def forecast_astro(
                 "sqm": best.get("sqm"),
                 "moon_score": best.get("moon_score"),
                 "frame_bonus": best.get("frame_bonus"),
-                "window": best
+                "window": best,
+                "catalog_key": obj_name,
             })
 
         if not all_results:
@@ -1311,7 +1345,8 @@ def forecast_astro(
                     "moon_score": round(float(r["window"]["details"][0]["moon"]), 1),
                     "frame_bonus": round(float(r["window"]["details"][0]["frame_bonus"]), 1),
                     "project_bonus": round(float(r["window"]["details"][0].get("project_bonus", 0)), 1),
-                }
+                    "remaining_hours":project_remaining_hours(r["catalog_key"]),}
+                    
                 for r in all_results[:5]
             ],
             "best_window": {
@@ -1616,6 +1651,7 @@ for j, obj in enumerate(night["top_objects"], start=1):
         f"sqm={obj['sqm']:.1f} "
         f"frame={obj['frame_bonus']} "
         f"project={obj.get('project_bonus', 0)}"
+        f"remaining={obj.get('remaining_hours','-')}"
 )
 best_objects = night.get("best_objects") or [night["object"]]
 obj_key = best_objects[0]
@@ -1684,7 +1720,5 @@ elif len(best_objects) > 1:
         obj = CATALOG.get(obj_key, {"name": obj_key})
         print(f" - {obj['name']} ({obj_key})")
 
-print()
-
-        
+print()   
 
