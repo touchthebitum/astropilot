@@ -518,6 +518,22 @@ def project_remaining_hours(object_name):
 
     return max(0, round(target_hours - hours, 1))
 
+def project_progress(object_name):
+    projects = get_projects()
+
+    if object_name not in projects:
+        return 0
+
+    project = projects[object_name]
+
+    hours_done = project.get("hours", 0)
+    target_hours = project.get("target_hours", 1)
+
+    if target_hours <= 0:
+        return 0
+
+    return round((hours_done / target_hours) * 100, 1)
+
 def estimate_remaining_nights(object_name, avg_night_hours=5):
 
     remaining = project_remaining_hours(object_name)
@@ -684,6 +700,8 @@ def recommend_project():
             continue
 
         priority = project_priority(name)
+        progress = project_progress(name)
+        completion_bonus = progress / 5
 
     season_bonus = altitude_bonus(
         CATALOG.get(name, {})
@@ -696,6 +714,7 @@ def recommend_project():
         + season_bonus
         + season_window
         + roi * 15
+        + completion_bonus
     )
 
     candidates.append({
@@ -709,6 +728,8 @@ def recommend_project():
             "portfolio_score": portfolio_score,
             "season_window": season_window,
             "months_left": season_remaining_months(CATALOG.get(name,{})),
+            "progress" : progress,
+            "comnpletion_bonus": completion_bonus,
         })
 
 
@@ -817,7 +838,48 @@ def show_project_stats():
             f"{best[0]} ({best[1]['hours']:.1f} h)"
         )
 
-   
+def show_portfolio_dashboard():
+    projects = get_projects()
+
+    if not projects:
+        print("\nAucun projet enregistré")
+        return
+
+    total_done = 0
+    total_target = 0
+
+    print("\n===== PORTEFEUILLE ASTRO =====\n")
+
+    for name, project in projects.items():
+        hours = project.get("hours", 0)
+        target = project.get("target_hours", 0)
+        remaining = max(0, target - hours)
+
+        progress = 0
+        if target > 0:
+            progress = round(hours / target * 100, 1)
+
+        total_done += hours
+        total_target += target
+
+        print(
+            f"{name:15} "
+            f"{hours:5.1f} / {target:5.1f} h "
+            f"{progress:5.1f}% "
+            f"reste {remaining:5.1f} h"
+        )
+
+    total_remaining = max(0, total_target - total_done)
+
+    global_progress = 0
+    if total_target > 0:
+        global_progress = round(total_done / total_target * 100, 1)
+
+    print("\n----- TOTAL -----")
+    print(f"Heures réalisées : {total_done:.1f} h")
+    print(f"Heures restantes : {total_remaining:.1f} h")
+    print(f"Progression globale : {global_progress:.1f}%")
+
 
 
 def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
@@ -2049,8 +2111,9 @@ elif len(best_objects) > 1:
 
 print()   
 
-#log_project_session("M31", 1)
+#log_project_session("M31", 2)
 #show_project_stats()
+show_portfolio_dashboard()
 project = recommend_project()
 
 if project:
@@ -2066,4 +2129,6 @@ if project:
     print(f"Score portefeuille : {project['portfolio_score']:.1f}")
     print(f"Mois restants : {project['months_left']}")
     print(f"Bonus saison : {project['season_window']}")
+    print(f"Progression : {project['progress']} %")
+    print(f"Bonus clôture : {project.get('completion_bonus', 0):.1f}")
     

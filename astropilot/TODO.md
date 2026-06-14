@@ -57,3 +57,19 @@ Répondre automatiquement :
 - Session history
 - Multi-night planner
 - "What should I do tonight?" mode
+
+
+[x] Importance utilisateur
+[x] Temps restant projet
+[x] Nuits estimées
+[x] ROI projet
+[x] Bonus altitude
+[x] Fenêtre saisonnière
+
+TODO:
+[ ] Fenêtre saisonnière basée sur la déclinaison réelle
+[ ] Historique des sessions
+[ ] ROI par setup
+[ ] Optimisation portefeuille complète
+[ ] Recommandation multi-nuits
+[ ] Planification hebdomadaire
