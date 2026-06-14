@@ -651,9 +651,9 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     "score_final": score,
     "frame_bonus": frame_bonus,
     "target_bonus": target_bonus,
-    "project_bonus": project_bonus,
     "temperature_bonus": tb,
     "penalty": round(penalty, 1),
+    "project_bonus": project_bonus,
     
 }
     
@@ -1298,6 +1298,7 @@ def forecast_astro(
                     "sqm": round(float(r["window"]["sqm"]), 2),
                     "moon_score": round(float(r["window"]["details"][0]["moon"]), 1),
                     "frame_bonus": round(float(r["window"]["details"][0]["frame_bonus"]), 1),
+                    "project_bonus": round(float(r["window"]["details"][0].get("project_bonus", 0)), 1),
                 }
                 for r in all_results[:5]
             ],
@@ -1601,8 +1602,9 @@ for j, obj in enumerate(night["top_objects"], start=1):
         f"alt={obj['altitude']:.0f}° "
         f"moon_sep={obj['moon_sep']:.0f}° "
         f"sqm={obj['sqm']:.1f} "
-        f"frame={obj['frame_bonus']}"
-    )
+        f"frame={obj['frame_bonus']} "
+        f"project={obj.get('project_bonus', 0)}"
+)
 best_objects = night.get("best_objects") or [night["object"]]
 obj_key = best_objects[0]
 obj = CATALOG.get(obj_key, {"name": obj_key})
