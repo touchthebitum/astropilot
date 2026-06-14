@@ -1,23 +1,19 @@
 {
-  "user": {
-    "name": "Franck",
-    "experience_level": "advanced"
+  "default_location": {
+    "name": "Buttes",
+    "bortle": 4
   },
-
-  "equipment": {
-    "primary": "rc8_294",
-    "secondary": "rc8_294"
-  },
-  
+  "active_equipment": "samyang135_2600",
+  "available_equipment": [
+    "samyang135_2600",
+    "redcat51_2600",
+    "evostar72_533",
+    "c8_hyperstar_2600",
+    "rc8_294"
+  ],
   "preferences": {
-    "favorite_targets": [
-        "galaxy",
-        "nebula"
-    ],
-    "min_altitude_deg": 30,
-    "bortle": 3,
-    "min_sqm": 20.0
-},
-
-    "default_location": "buttes"
+    "default_goal": "balanced",
+    "prefer_existing_projects": true,
+    "max_setup_changes_per_night": 1
+  }
 }

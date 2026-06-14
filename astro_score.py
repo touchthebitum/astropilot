@@ -26,6 +26,14 @@ from astropilot.equipment_profiles import (
     compare_object_to_equipment
 )
 import argparse
+from astropilot.user_profile import (
+    get_default_location,
+    load_user_profile,
+    favorite_targets,
+    get_active_equipment,
+    get_available_equipment,
+    get_preferences,
+)
 
 warnings.filterwarnings(
     "ignore",
@@ -1469,12 +1477,12 @@ if __name__ == "__main__":
 
                 print(f"Temps conseillé {filter_name} : {exposure} h")
 
-    else:
-        exposure = recommended_exposure(obj)
-        print(f"Temps de pose conseillé : {exposure} h")
-        print("Filtres conseillés : aucun")
+        else:
+            exposure = recommended_exposure(obj)
+            print(f"Temps de pose conseillé : {exposure} h")
+            print("Filtres conseillés : aucun")
 
-    exit()
+        exit()
 
 
     if args.compare:
