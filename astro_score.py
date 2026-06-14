@@ -1419,8 +1419,9 @@ def forecast_astro(
                     "moon_score": round(float(r["window"]["details"][0]["moon"]), 1),
                     "frame_bonus": round(float(r["window"]["details"][0]["frame_bonus"]), 1),
                     "project_bonus": round(float(r["window"]["details"][0].get("project_bonus", 0)), 1),
-                    "remaining_hours":project_remaining_hours(r["catalog_key"]),}
-
+                    "remaining_hours":project_remaining_hours(r["catalog_key"]),
+                    "priority_bonus": round(float(r["window"]["details"][0].get("priority_bonus", 0)),),
+                }
                 for r in all_results[:5]
             ],
             "best_window": {
@@ -1726,6 +1727,7 @@ for j, obj in enumerate(night["top_objects"], start=1):
         f"frame={obj['frame_bonus']} "
         f"project={obj.get('project_bonus', 0)}"
         f"remaining={obj.get('remaining_hours','-')}"
+        f"prio={obj.get('priority_bonus',0)}"
 )
 best_objects = night.get("best_objects") or [night["object"]]
 obj_key = best_objects[0]
