@@ -14,7 +14,9 @@
     "preferences": {
         "default_goal": "balanced",
         "prefer_existing_projects": true,
-        "max_setup_changes_per_night": 1
+        "max_setup_changes_per_night": 1,
+        "astro_weight": 0.7,
+        "project_weight": 0.3
     },
     "projects": {
         "M31": {

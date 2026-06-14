@@ -609,6 +609,45 @@ def recommend_project():
     
     return candidates[0]
 
+def recommend_project_for_night(top_objects):
+
+    profile = load_user_profile()
+
+    astro_weight = profile["preferences"].get(
+        "astro_weight", 0.7
+    )
+
+    project_weight = profile["preferences"].get(
+        "project_weight", 0.3
+    )
+
+    candidates = []
+
+    for obj in top_objects:
+
+        astro_score = obj["score"]
+        priority = project_priority(obj.get("catalog_key",obj["name"])
+        )
+        final_score = (
+            astro_score * astro_weight
+            + priority * project_weight
+        )
+
+        candidates.append({
+            "name": obj["name"],
+            "astro_score": astro_score,
+            "priority": priority,
+            "final_score": final_score
+        })
+
+    candidates.sort(
+        key=lambda x: x["final_score"],
+        reverse=True
+    )
+
+    return candidates[0]
+
+
 def show_project_stats():
     profile = load_user_profile()
 
@@ -1765,6 +1804,19 @@ obj_key = best_objects[0]
 obj = CATALOG.get(obj_key, {"name": obj_key})
 
 print(f"Objet recommandé : {obj['name']} ({obj_key})")
+
+night_project = recommend_project_for_night(
+    night["top_objects"]
+)
+
+if night_project:
+    print("\n===== PROJET DE CE SOIR =====")
+    print(
+        f"{night_project['name']} "
+        f"(astro={night_project['astro_score']:.1f}, "
+        f"prio={night_project['priority']:.1f}, "
+        f"final={night_project['final_score']:.1f})"
+    )
 
 remaining = project_remaining_hours(obj_key)
 
