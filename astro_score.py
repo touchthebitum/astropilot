@@ -662,9 +662,9 @@ def recommend_project():
     roi = project_roi(name)
 
     portfolio_score = (
-        priority
+        priority * 0.6
         + season_bonus
-        + roi * 5
+        + roi * 15
     )
 
     candidates.append({
@@ -2025,9 +2025,10 @@ if project:
     print(f"Projet : {project['name']}")
     print(
         f"Progression : "
-        f"{project['hours_done']} / {project['target_hours']} h"
-    )
+        f"{project['hours_done']} / {project['target_hours']} h")
     print(f"Reste : {project['remaining']:.1f} h")
     print(f"Priorité : {project['priority']:.1f}")
-    print(f"Score portefeuille : {project['portfolio_score']:.1f}")
+    print(f"Bonus saisonier : {project['season_bonus']}")
     print(f"ROI : {project['roi']}")
+    print(f"Score portefeuille : {project['portfolio_score']:.1f}")
+    
