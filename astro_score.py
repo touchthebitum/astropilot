@@ -1483,6 +1483,7 @@ def forecast_astro(
                 {
                     "name": r["name"],
                     "score": int(r["score"]),
+                    "catalog_key": r["catalog_key"],
                     "altitude": round(float(r["window"]["target_altitude"]), 1),
                     "moon_sep": round(float(r["window"]["moon_sep"]), 1),
                     "sqm": round(float(r["window"]["sqm"]), 2),

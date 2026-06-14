@@ -11,7 +11,7 @@
 - [x] Projet recommandé pour la nuit
 
 ## Phase 2 - Moteur de décision
-- [ ] Afficher le détail du score final
+- [x] Afficher le détail du score final
 - [ ] Expliquer pourquoi un projet est recommandé
 - [ ] Exclure automatiquement les projets terminés
 - [ ] Ajouter une importance utilisateur aux projets
