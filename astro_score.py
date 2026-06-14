@@ -1948,7 +1948,7 @@ if night_projects:
             f"{details['remaining_nights']}"
             )
         print(
-            f" - Bonus saisonier : "
+            f" - Bonus altitude: "
             f"{night_project['season_bonus']}"
         )
         print(
@@ -2028,7 +2028,7 @@ if project:
         f"{project['hours_done']} / {project['target_hours']} h")
     print(f"Reste : {project['remaining']:.1f} h")
     print(f"Priorité : {project['priority']:.1f}")
-    print(f"Bonus saisonier : {project['season_bonus']}")
+    print(f"Bonus altitude : {project['season_bonus']}")
     print(f"ROI : {project['roi']}")
     print(f"Score portefeuille : {project['portfolio_score']:.1f}")
     
