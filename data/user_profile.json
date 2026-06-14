@@ -15,5 +15,19 @@
     "default_goal": "balanced",
     "prefer_existing_projects": true,
     "max_setup_changes_per_night": 1
+  },
+  "projects": {
+  "M31": {
+    "hours": 12.5,
+    "target_hours": 20
+  },
+  "Rosette": {
+    "hours": 3,
+    "target_hours": 12
+  },
+  "IC1396": {
+    "hours": 0,
+    "target_hours": 15
   }
 }
+  }

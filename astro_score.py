@@ -17,7 +17,7 @@ from astropilot.catalog import CATALOG
 from astropilot.equipment_profiles import CURRENT_EQUIPMENT, get_fov
 from astropilot.equipment_profiles import equipment_match_score
 from astropilot.equipment_profiles import capture_score
-from astropilot.user_profile import (get_default_location, load_user_profile, favorite_targets, get_available_equipment)
+from astropilot.user_profile import (get_default_location, load_user_profile, favorite_targets, get_available_equipment, get_preferences, get_projects,)
 from astropilot.equipment_profiles import (
     get_fov,
     set_current_equipment,
@@ -486,6 +486,26 @@ def estimated_sqm(bortle, moon_illumination, moon_elevation, moon_target_sep):
 
     return round(base - moon_loss, 2)
 
+def project_progress_bonus(object_name):
+    projects = get_projects()
+
+    if object_name not in projects:
+        return 0
+
+    project = projects[object_name]
+    hours = project.get("hours", 0)
+    target_hours = project.get("target_hours", 1)
+
+    if target_hours <= 0:
+        return 0
+
+    progress = hours / target_hours
+
+    if progress >= 1:
+        return -20
+
+    return round(progress * 15, 1)
+
 def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
     penalty = 0
 
@@ -604,13 +624,15 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
 
     elif goal in ["clusters", "cluster"] and "cluster" in obj_type:
         target_bonus += 12
- 
+
+    project_bonus = project_progress_bonus(target_object)
+
     score = round(
-    max(
+        max(
         0,
         min(
             100,
-            45 - penalty + tb + target_bonus + sqm_bonus
+            45 - penalty + tb + target_bonus + sqm_bonus + project_bonus
         )
     )
 )
@@ -629,8 +651,10 @@ def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_targe
     "score_final": score,
     "frame_bonus": frame_bonus,
     "target_bonus": target_bonus,
+    "project_bonus": project_bonus,
     "temperature_bonus": tb,
     "penalty": round(penalty, 1),
+    
 }
     
     if mp < 5:
