@@ -19,7 +19,7 @@
 - [x] Estimer le nombre de nuits restantes
 
 ## Phase 3 - ROI astrophotographique
-- [ ] Facteur saisonnier
+- [x] Facteur saisonnier
 - [ ] ROI par projet
 - [ ] ROI par setup
 - [ ] ROI par filtre

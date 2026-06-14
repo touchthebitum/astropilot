@@ -707,7 +707,7 @@ def recommend_project_for_night(top_objects):
         reverse=True
     )
 
-    return candidates[0]
+    return candidates
 
 
 def show_project_stats():
@@ -1868,13 +1868,20 @@ obj = CATALOG.get(obj_key, {"name": obj_key})
 
 print(f"Objet recommandé : {obj['name']} ({obj_key})")
 
-night_project = recommend_project_for_night(
+night_projects = recommend_project_for_night(
     night["top_objects"]
 )
 
-if night_project:
+if night_projects:
 
-    print("\n===== PROJET DE CE SOIR =====\n")
+    print("\n===== TOP PROJETS CE SOIR =====")
+
+    for i, project in enumerate(night_projects[:3], start=1):
+        print(
+            f"{i}. {project['name']} "
+            f"(score {project['final_score']:.1f})"
+        )
+    night_project = night_projects[0]
 
     print(f"Projet : {night_project['name']}")
     print(f"Score astro : {night_project['astro_score']:.1f}")
