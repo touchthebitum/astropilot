@@ -542,6 +542,30 @@ def project_priority(object_name):
     base_priority = progress_score + remaining_score
     return round(base_priority * (importance / 5), 1)
 
+def project_details(object_name):
+    projects = get_projects()
+
+    if object_name not in projects:
+        return None
+
+    project = projects[object_name]
+
+    hours = project.get("hours", 0)
+    target = project.get("target_hours", 0)
+    importance = project.get("importance", 5)
+
+    remaining = max(0, target - hours)
+
+    progress = 0
+    if target > 0:
+        progress = round(hours / target * 100, 1)
+
+    return {
+        "importance": importance,
+        "progress": progress,
+        "remaining": remaining
+    }
+
 def save_user_profile(profile):
     with open("data/user_profile.json", "w", encoding="utf-8") as f:
         json.dump(profile, f, indent=4, ensure_ascii=False)
@@ -1831,29 +1855,27 @@ if night_project:
     print(f"Priorité projet : {night_project['priority']:.1f}")
     print(f"Score final : {night_project['final_score']:.1f}")
 
-else:
-    print("\nAucun projet actif trouvé")
+    details = project_details(
+        night_project["name"]
+        )
 
-    obj = CATALOG.get(
-    night_project["name"],
-    {"name": night_project["name"]}
-    )
+    if details:
+        print("\nPourquoi ?")
 
-    print(
-    f"- Priorité projet : "
-    f"{night_project['priority']:.1f}"
-    )
+        print(
+            f"- Importance utilisateur : "
+            f"{details['importance']}/10"
+        )
 
-    remaining = project_remaining_hours(
-    obj.get("catalog_key", night_project["name"])
-    )
+        print(
+            f"- Progression : "
+            f"{details['progress']}%"
+        )
 
-    if remaining is not None:
-
-        remaining = project_remaining_hours(obj_key)
-
-    if remaining is not None:
-        print(f"Temps restant projet : {remaining} h")
+        print(
+            f"- Temps restant : "
+            f"{details['remaining']} h"
+        )
 
 best_setup = best_equipment_for_object(obj_key)
 

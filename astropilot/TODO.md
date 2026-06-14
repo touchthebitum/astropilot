@@ -12,9 +12,9 @@
 
 ## Phase 2 - Moteur de décision
 - [x] Afficher le détail du score final
-- [ ] Expliquer pourquoi un projet est recommandé
+- [x] Expliquer pourquoi un projet est recommandé
 - [ ] Exclure automatiquement les projets terminés
-- [ ] Ajouter une importance utilisateur aux projets
+- [x] Ajouter une importance utilisateur aux projets
 - [ ] Ajouter la date de dernière acquisition
 - [ ] Estimer le nombre de nuits restantes
 
