@@ -16,7 +16,7 @@
 - [ ] Exclure automatiquement les projets terminés
 - [x] Ajouter une importance utilisateur aux projets
 - [ ] Ajouter la date de dernière acquisition
-- [ ] Estimer le nombre de nuits restantes
+- [x] Estimer le nombre de nuits restantes
 
 ## Phase 3 - ROI astrophotographique
 - [ ] Facteur saisonnier
