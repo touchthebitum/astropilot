@@ -518,6 +518,28 @@ def project_remaining_hours(object_name):
 
     return max(0, round(target_hours - hours, 1))
 
+def project_priority(object_name):
+    projects = get_projects()
+
+    if object_name not in projects:
+        return 0
+
+    project = projects[object_name]
+
+    hours = project.get("hours", 0)
+    target = project.get("target_hours", 0)
+
+    if target <= 0:
+        return 0
+
+    completion = hours / target
+    remaining = max(0, target - hours)
+
+    progress_score = (1 - completion) * 50
+    remaining_score = min(remaining, 20)
+
+    return round(progress_score + remaining_score, 1)
+
 def save_user_profile(profile):
     with open("data/user_profile.json", "w", encoding="utf-8") as f:
         json.dump(profile, f, indent=4, ensure_ascii=False)
@@ -537,6 +559,12 @@ def log_project_session(object_name, session_hours):
         current_hours + float(session_hours),
         1
     )
+    session = {
+    "date": datetime.now().strftime("%Y-%m-%d"),
+    "object": object_name,
+    "hours": float(session_hours),
+    }
+    profile.setdefault("sessions", []).append(session)
 
     save_user_profile(profile)
 
@@ -549,6 +577,48 @@ def log_project_session(object_name, session_hours):
 
     if remaining is not None:
         print(f"Reste : {remaining} h")
+
+def show_project_stats():
+    profile = load_user_profile()
+
+    projects = profile.get("projects", {})
+    sessions = profile.get("sessions", [])
+
+    print("\n===== STATISTIQUES =====\n")
+
+    total_hours = 0
+
+    for name, data in projects.items():
+        hours = data.get("hours", 0)
+        total_hours += hours
+
+        remaining = max(
+            0,
+            data.get("target_hours", 0) - hours
+        )
+        priority = project_priority(name)
+        print(
+            f"{name:15}"
+            f"{hours:5.1f} h   "
+            f"reste {remaining:5.1f} h"
+            f"prio {priority:5.1f}"
+        )
+
+    print()
+    print(f"Temps total acquis : {total_hours:.1f} h")
+    print(f"Nombre de sessions : {len(sessions)}")
+
+    if projects:
+        best = max(
+            projects.items(),
+            key=lambda x: x[1].get("hours", 0)
+        )
+
+        print(
+            f"Projet principal : "
+            f"{best[0]} ({best[1]['hours']:.1f} h)"
+        )
+
 
 
 def hour_score(hour, moon_illumination, moon_visible, moon_elevation, moon_target_sep, target_altitude, bortle=4, target="deep_sky", target_object=None, goal="balanced"):
@@ -1346,7 +1416,7 @@ def forecast_astro(
                     "frame_bonus": round(float(r["window"]["details"][0]["frame_bonus"]), 1),
                     "project_bonus": round(float(r["window"]["details"][0].get("project_bonus", 0)), 1),
                     "remaining_hours":project_remaining_hours(r["catalog_key"]),}
-                    
+
                 for r in all_results[:5]
             ],
             "best_window": {
@@ -1722,3 +1792,5 @@ elif len(best_objects) > 1:
 
 print()   
 
+#log_project_session("M31", 1)
+show_project_stats()
