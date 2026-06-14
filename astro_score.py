@@ -1799,4 +1799,4 @@ elif len(best_objects) > 1:
 print()   
 
 #log_project_session("M31", 1)
-show_project_stats()
+#show_project_stats()
