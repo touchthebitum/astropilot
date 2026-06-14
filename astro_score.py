@@ -1811,13 +1811,11 @@ night_project = recommend_project_for_night(
 )
 
 if night_project:
-    print("\n===== PROJET DE CE SOIR =====")
-    print(
-        f"{night_project['name']} "
-        f"(astro={night_project['astro_score']:.1f}, "
-        f"prio={night_project['priority']:.1f}, "
-        f"final={night_project['final_score']:.1f})"
-    )
+    print("\n===== PROJET DE CE SOIR =====\n")
+    print(f"Projet           : {night_project['name']}")
+    print(f"Score astro      : {night_project['astro_score']:.1f}")
+    print(f"Priorité projet  : {night_project['priority']:.1f}")
+    print(f"Score final      : {night_project['final_score']:.1f}")
 
 remaining = project_remaining_hours(obj_key)
 
