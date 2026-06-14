@@ -502,7 +502,7 @@ def project_progress_bonus(object_name):
     progress = hours / target_hours
 
     if progress >= 1:
-        return -20
+        return -50
 
     return round(progress * 15, 1)
 
