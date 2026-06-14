@@ -552,7 +552,7 @@ def project_priority(object_name):
     base_priority = progress_score + remaining_score
     return round(base_priority * (importance / 5), 1)
 
-def seasonal_priority(obj):
+def altitude_bonus(obj):
 
     altitude = obj.get("altitude", 0)
 
@@ -655,7 +655,7 @@ def recommend_project():
 
         priority = project_priority(name)
 
-    season_bonus = seasonal_priority(
+    season_bonus = altitude_bonus(
         CATALOG.get(name, {})
     )
 
@@ -714,7 +714,7 @@ def recommend_project_for_night(top_objects):
 
         astro_score = obj["score"]
         priority = project_priority(catalog_key)
-        season_bonus = seasonal_priority(obj)
+        season_bonus = altitude_bonus(obj)
         roi = project_roi(catalog_key)
 
         final_score = (

@@ -38,3 +38,22 @@
 Répondre automatiquement :
 
 "Que dois-je faire ce soir avec mon matériel pour maximiser mon rendement astrophotographique ?"
+
+
+## Roadmap v3
+
+### Done
+- User project importance
+- Project progression
+- Remaining hours
+- Estimated nights
+- Project ROI
+- Portfolio scoring
+- Night project recommendation
+
+### Next
+- Rename altitude_bonus -> altitude_bonus
+- True seasonal astrophotography score
+- Session history
+- Multi-night planner
+- "What should I do tonight?" mode
