@@ -978,17 +978,45 @@ def show_action_plan(
         f"9. Temps restant après session : "
         f"{remaining_after:.1f} h"
     )
-
-    if remaining_after <= duration:
+    if remaining_after <=0:
         print("10. Projet terminable ce soir : OUI")
     else:
         print("10. Projet terminable ce soir : NON")
+
+    total_target = 0
+    total_done_before = 0
+    total_done_after = 0
+
+    for name, project in projects.items():
+        target = project.get("target_hours", 0)
+        done = project.get("hours", 0)
+
+        total_target += target
+        total_done_before += done
+
+        if name == night_project["name"]:
+            done += duration
+
+        total_done_after += min(done, target)
+
+    if total_target > 0:
+        portfolio_before = total_done_before / total_target * 100
+        portfolio_after = total_done_after / total_target * 100
+        portfolio_gain = portfolio_after - portfolio_before
+
+    if remaining_after <= duration:
+        
         remaining_after = max(
         0,
         target_hours - (
         projects[night_project["name"]]["hours"] + duration
-    )
-)
+        )
+        )
+        print(
+            f"11. Gain portefeuille global : "
+            f"+{portfolio_gain:.1f} %"
+        )
+
     
 def show_portfolio_dashboard():
     
