@@ -955,7 +955,7 @@ def show_action_plan(
     progress = project_progress(night_project["name"])
     projects = get_projects()
     target_hours = projects[night_project["name"]].get("target_hours", 0)
-    
+
     future_progress = min(
         100,
         progress + (
@@ -967,7 +967,28 @@ def show_action_plan(
         f"8. Progression après session : "
         f"{future_progress:.1f} %"
     )
+    current_hours = projects[night_project["name"]]["hours"]
 
+    remaining_after = max(
+    0,
+        target_hours - (current_hours + duration)
+    )
+
+    print(
+        f"9. Temps restant après session : "
+        f"{remaining_after:.1f} h"
+    )
+
+    if remaining_after <= duration:
+        print("10. Projet terminable ce soir : OUI")
+    else:
+        print("10. Projet terminable ce soir : NON")
+        remaining_after = max(
+        0,
+        target_hours - (
+        projects[night_project["name"]]["hours"] + duration
+    )
+)
     
 def show_portfolio_dashboard():
     
