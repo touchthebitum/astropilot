@@ -869,7 +869,29 @@ def show_project_stats():
             f"Projet principal : "
             f"{best[0]} ({best[1]['hours']:.1f} h)"
         )
+def show_tonight_recommendation(night):
+    night_projects = recommend_project_for_night(
+        night["top_objects"]
+    )
 
+    if not night_projects:
+        print("\nAucun projet actif trouvé")
+        return
+
+    print("\n===== TOP PROJETS CE SOIR =====")
+
+    for i, project in enumerate(night_projects[:3], start=1):
+        print(
+            f"{i}. {project['name']} "
+            f"(score {project['final_score']:.1f})"
+        )
+
+    night_project = night_projects[0]
+
+    print(f"Projet : {night_project['name']}")
+    print(f"Score astro : {night_project['astro_score']:.1f}")
+    print(f"Priorité projet : {night_project['priority']:.1f}")
+    print(f"Score final : {night_project['final_score']:.1f}")
 
 def show_portfolio_dashboard():
     
@@ -2139,121 +2161,8 @@ obj_key = best_objects[0]
 obj = CATALOG.get(obj_key, {"name": obj_key})
 
 print(f"Objet recommandé : {obj['name']} ({obj_key})")
-
-night_projects = recommend_project_for_night(
-    night["top_objects"]
-)
-
-if night_projects:
-
-    print("\n===== TOP PROJETS CE SOIR =====")
-
-    for i, project in enumerate(night_projects[:3], start=1):
-        print(
-            f"{i}. {project['name']} "
-            f"(score {project['final_score']:.1f})"
-        )
-    night_project = night_projects[0]
-
-    print(f"Projet : {night_project['name']}")
-    print(f"Score astro : {night_project['astro_score']:.1f}")
-    print(f"Priorité projet : {night_project['priority']:.1f}")
-    print(f"Score final : {night_project['final_score']:.1f}")
-
-    details = project_details(
-        night_project["name"]
-        )
-
-    if details:
-        print("\nPourquoi ?")
-
-        print(
-            f"- Importance utilisateur : "
-            f"{details['importance']}/10"
-        )
-
-        print(
-            f"- Progression : "
-            f"{details['progress']}%"
-        )
-
-        print(
-            f"- Temps restant : "
-            f"{details['remaining']} h"
-        )
-        print(
-            f"- Nuits estimées : "
-            f"{details['remaining_nights']}"
-            )
-        print(
-            f" - Bonus altitude: "
-            f"{night_project['season_bonus']}"
-        )
-        print(
-            f" - ROI projet : "
-            f"{night_project['roi']}"
-        )
-        
-        
-
-best_setup = best_equipment_for_object(obj_key)
-
-if best_setup:
-    print(
-        f"Meilleur setup : "
-        f"{best_setup['equipment']} "
-        f"(score {best_setup['score']})"
-    )
-best_filters = recommend_filter(obj)
-
-if best_filters:
-    print("Filtres conseillés : " + ", ".join(best_filters))
-
-    for filter_name in best_filters:
-        filter_type = None
-
-        if "Ha" in filter_name:
-            filter_type = "Ha"
-        elif "OIII" in filter_name:
-            filter_type = "OIII"
-        elif "SII" in filter_name:
-            filter_type = "SII"
-        elif "LRGB" in filter_name:
-            filter_type = "LRGB"
-
-        exposure = recommended_exposure(
-            CATALOG[obj_key],
-            filter_type=filter_type
-        )
-
-        print(f"Temps conseillé {filter_name} : {exposure} h")
-else:
-    exposure = recommended_exposure(CATALOG[obj_key])
-    print(f"Temps de pose conseillé : {exposure} h")
-    print("Filtres conseillés : aucun")
-
-if args.goal == "best_setup":
-    print("\nMatériels conseillés :")
-
-    setups = best_setup_for_object(obj_key)
-
-    for i, r in enumerate(setups[:5], start=1):
-        print(
-            f"{i}. {r['equipment']} "
-            f"score={r['score']} "
-            f"frame={r['frame_bonus']} "
-            f"ratio={r['ratio']}"
-        )
-
-elif len(best_objects) > 1:
-    print("Objets recommandés (ex aequo) :")
-
-    for obj_key in best_objects:
-        obj = CATALOG.get(obj_key, {"name": obj_key})
-        print(f" - {obj['name']} ({obj_key})")
-
-print()   
-
+show_tonight_recommendation(night)
+  
 #log_project_session("M31", 2)
 #show_project_stats()
 show_portfolio_dashboard()
