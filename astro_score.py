@@ -888,11 +888,32 @@ def show_tonight_recommendation(night):
 
     night_project = night_projects[0]
 
+    obj_key = night_project["name"]
+    obj = CATALOG.get(obj_key, {"name": obj_key})
+
+    best_setup = best_equipment_for_object(obj_key)
+    best_filters = recommend_filter(obj)
+
     print(f"Projet : {night_project['name']}")
     print(f"Score astro : {night_project['astro_score']:.1f}")
     print(f"Priorité projet : {night_project['priority']:.1f}")
     print(f"Score final : {night_project['final_score']:.1f}")
 
+    print("\n===== PLAN DE NUIT =====")
+
+    window = night.get("best_window")
+
+    if window:
+        print(f"Fenêtre optimale : {window['start']} → {window['end']}")
+
+    print(f"Action recommandée : terminer {night_project['name']}")
+
+    if best_setup:
+        print(f"Setup : {best_setup['equipment']}")
+
+    if best_filters:
+        print(f"Filtre : {best_filters[0]}")
+    
 def show_portfolio_dashboard():
     
     projects = get_projects()
@@ -2162,7 +2183,6 @@ obj = CATALOG.get(obj_key, {"name": obj_key})
 
 print(f"Objet recommandé : {obj['name']} ({obj_key})")
 show_tonight_recommendation(night)
-  
 #log_project_session("M31", 2)
 #show_project_stats()
 show_portfolio_dashboard()
@@ -2185,5 +2205,5 @@ if project:
     print(f"Bonus saison : {project['season_window']}")
     print(f"Progression : {project['progress']} %")
     print(f"Bonus clôture : {project.get('completion_bonus', 0):.1f}")
-    
+
     
