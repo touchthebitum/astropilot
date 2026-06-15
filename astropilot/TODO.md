@@ -73,3 +73,13 @@ TODO:
 [ ] Optimisation portefeuille complète
 [ ] Recommandation multi-nuits
 [ ] Planification hebdomadaire
+
+
+
+===== FEUILLE DE ROUTE =====
+
+1. Terminer M31 (1 nuit)
+2. Commencer IC1396
+3. Fin estimée IC1396 : 8 nuits
+4. Ensuite Rosette
+5. Portefeuille terminé estimé : septembre 2026
