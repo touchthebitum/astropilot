@@ -913,6 +913,61 @@ def show_tonight_recommendation(night):
 
     if best_filters:
         print(f"Filtre : {best_filters[0]}")
+
+    show_action_plan(
+        night,
+        night_project,
+        best_setup,
+        best_filters
+    )
+
+def show_action_plan(
+    night,
+    night_project,
+    best_setup,
+    best_filters
+):
+    print("\n===== QUE FAIRE CE SOIR ? =====")
+
+    window = night.get("best_window")
+
+    if best_setup:
+        print(f"1. Monter setup {best_setup['equipment']}")
+
+    if best_filters:
+        print(f"2. Charger filtre {best_filters[0]}")
+
+    print(f"3. Pointer {night_project['name']}")
+
+    if window:
+        print(f"4. Commencer à {window['start']}")
+        print(f"5. Fin prévue à {window['end']}")
+
+        start = int(window["start"].split(":")[0])
+        end = int(window["end"].split(":")[0])
+
+        duration = end - start
+
+        print(f"6. Temps disponible : {duration:.1f} h")
+
+    print(f"7. ROI projet : {night_project['roi']:.2f}")
+
+    progress = project_progress(night_project["name"])
+    projects = get_projects()
+    target_hours = projects[night_project["name"]].get("target_hours", 0)
+    
+    future_progress = min(
+        100,
+        progress + (
+            100 * duration / target_hours
+        )
+    )
+
+    print(
+        f"8. Progression après session : "
+        f"{future_progress:.1f} %"
+    )
+
     
 def show_portfolio_dashboard():
     
