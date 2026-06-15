@@ -829,6 +829,51 @@ def forecast_available_hours(nights):
 
     return round(total, 1)
 
+def next_project_after(current_project):
+    projects = get_projects()
+
+    ranking = []
+
+    for name, project in projects.items():
+
+        if name == current_project:
+            continue
+
+        remaining = max(
+            0,
+            project["target_hours"] - project["hours"]
+        )
+
+        if remaining <= 0:
+            continue
+
+        priority = project_priority(name)
+        progress = project_progress(name)
+        roi = project_roi(name)
+
+        score = (
+            priority * 0.6
+            + roi * 15
+            + progress / 5
+        )
+
+        ranking.append(
+            {
+                "name": name,
+                "score": score,
+                "remaining": remaining,
+            }
+        )
+
+    ranking.sort(
+        key=lambda x: x["score"],
+        reverse=True
+    )
+
+    if ranking:
+        return ranking[0]
+
+    return None
 
 def show_project_stats():
     profile = load_user_profile()
@@ -1004,19 +1049,31 @@ def show_action_plan(
         portfolio_after = total_done_after / total_target * 100
         portfolio_gain = portfolio_after - portfolio_before
 
-    if remaining_after <= duration:
-        
-        remaining_after = max(
-        0,
-        target_hours - (
-        projects[night_project["name"]]["hours"] + duration
-        )
-        )
+    
         print(
             f"11. Gain portefeuille global : "
             f"+{portfolio_gain:.1f} %"
         )
+        next_project = next_project_after(
+            night_project["name"]
+    )
 
+    if next_project:
+
+        print(
+            f"12. Projet suivant recommandé : "
+            f"{next_project['name']}"
+            )
+
+        print(
+            f"    Score : "
+            f"{next_project['score']:.1f}"
+        )
+
+        print(
+            f"    Temps restant : "
+            f"{next_project['remaining']:.1f} h"
+        )
     
 def show_portfolio_dashboard():
     
